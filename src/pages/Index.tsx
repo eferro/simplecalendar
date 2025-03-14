@@ -1,12 +1,24 @@
-// Update this page (the content is just a fallback if you fail to update the page)
 
-const Index = () => {
+import React from 'react';
+import Calendar from '../components/Calendar/Calendar';
+
+const Index: React.FC = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen py-8 px-4 md:px-0">
+      <header className="max-w-7xl mx-auto mb-8">
+        <h1 className="text-4xl font-bold tracking-tight text-center">Calendar View</h1>
+        <p className="text-center text-muted-foreground mt-2">
+          A beautifully designed calendar with week numbers and quarter colors
+        </p>
+      </header>
+      
+      <main>
+        <Calendar />
+      </main>
+      
+      <footer className="max-w-7xl mx-auto mt-12 pt-6 border-t text-center text-sm text-muted-foreground">
+        <p>Designed with precision and attention to detail</p>
+      </footer>
     </div>
   );
 };
