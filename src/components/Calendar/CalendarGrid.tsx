@@ -16,12 +16,19 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ weeks }) => {
     
     // If there's more than one quarter in this week, return a gradient
     if (quarters.length > 1) {
-      const colors = quarters.map(q => getQuarterColor(q).replace('bg-', ''));
-      return `bg-gradient-to-r from-${colors[0]} to-${colors[1]}`;
+      // Sort quarters to ensure consistent gradient direction
+      quarters.sort();
+      
+      // Get the standard color classes (without the bg- prefix)
+      const q1Class = getQuarterColor(quarters[0]);
+      const q2Class = getQuarterColor(quarters[1]);
+      
+      // Return a directly styled element with the gradient
+      return `bg-gradient-to-r from-quarter-q${quarters[0]} to-quarter-q${quarters[1]}`;
     }
     
     // Otherwise return the single quarter color
-    return getQuarterColor(quarters[0]).replace('bg-', 'bg-muted/20');
+    return getQuarterColor(quarters[0]);
   };
   
   return (

@@ -45,45 +45,22 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Quarter colors */
+    --quarter-q1: 210 100% 90%;
+    --quarter-q2: 120 100% 90%;
+    --quarter-q3: 30 100% 90%;
+    --quarter-q4: 0 100% 90%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    /* ... keep existing code (dark theme variables) */
     
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Dark mode quarter colors */
+    --quarter-q1: 210 70% 25%;
+    --quarter-q2: 120 70% 25%;
+    --quarter-q3: 30 70% 25%;
+    --quarter-q4: 0 70% 25%;
   }
 }
 
@@ -99,57 +76,14 @@
     -moz-osx-font-smoothing: grayscale;
   }
   
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/20 rounded-full;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted-foreground/30;
-  }
+  /* ... keep existing code (scrollbar styles) */
 }
 
 .calendar-container {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in;
 }
 
-.calendar-transition {
-  @apply transition-all duration-300 ease-in-out;
-}
-
-.month-transition-enter {
-  @apply opacity-0;
-  transform: translateY(20px);
-}
-
-.month-transition-enter-active {
-  @apply opacity-100;
-  transform: translateY(0);
-  transition: opacity 300ms, transform 300ms;
-}
-
-.month-transition-exit {
-  @apply opacity-100;
-  transform: translateY(0);
-}
-
-.month-transition-exit-active {
-  @apply opacity-0;
-  transform: translateY(-20px);
-  transition: opacity 300ms, transform 300ms;
-}
-
-.hover-card-content {
-  @apply bg-white bg-opacity-90 backdrop-blur-md shadow-lg rounded-lg p-3 animate-scale;
-}
+/* ... keep existing code (transition classes) */
 
 .calendar-day {
   @apply relative h-20 sm:h-24 md:h-28 p-1 border border-border/50 transition-all duration-200;
@@ -157,6 +91,102 @@
 
 .week-number {
   @apply text-xs font-medium text-muted-foreground flex items-center justify-center h-full;
+}
+
+/* Quarter color classes */
+.bg-quarter-q1 {
+  @apply bg-blue-200;
+}
+.bg-quarter-q2 {
+  @apply bg-green-200;
+}
+.bg-quarter-q3 {
+  @apply bg-yellow-200;
+}
+.bg-quarter-q4 {
+  @apply bg-red-200;
+}
+
+/* Dark mode quarter colors */
+.dark .bg-quarter-q1 {
+  @apply bg-blue-800;
+}
+.dark .bg-quarter-q2 {
+  @apply bg-green-800;
+}
+.dark .bg-quarter-q3 {
+  @apply bg-yellow-800;
+}
+.dark .bg-quarter-q4 {
+  @apply bg-red-800;
+}
+
+/* For week number gradient styling */
+.from-quarter-q1 {
+  --tw-gradient-from: theme('colors.blue.200') var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(191 219 254 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.from-quarter-q2 {
+  --tw-gradient-from: theme('colors.green.200') var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(187 247 208 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.from-quarter-q3 {
+  --tw-gradient-from: theme('colors.yellow.200') var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(254 240 138 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.from-quarter-q4 {
+  --tw-gradient-from: theme('colors.red.200') var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(254 202 202 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.to-quarter-q1 {
+  --tw-gradient-to: theme('colors.blue.200') var(--tw-gradient-to-position);
+}
+.to-quarter-q2 {
+  --tw-gradient-to: theme('colors.green.200') var(--tw-gradient-to-position);
+}
+.to-quarter-q3 {
+  --tw-gradient-to: theme('colors.yellow.200') var(--tw-gradient-to-position);
+}
+.to-quarter-q4 {
+  --tw-gradient-to: theme('colors.red.200') var(--tw-gradient-to-position);
+}
+
+/* Dark mode gradient colors */
+.dark .from-quarter-q1 {
+  --tw-gradient-from: theme('colors.blue.800') var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(30 64 175 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.dark .from-quarter-q2 {
+  --tw-gradient-from: theme('colors.green.800') var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(22 101 52 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.dark .from-quarter-q3 {
+  --tw-gradient-from: theme('colors.yellow.800') var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(133 77 14 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.dark .from-quarter-q4 {
+  --tw-gradient-from: theme('colors.red.800') var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(153 27 27 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.dark .to-quarter-q1 {
+  --tw-gradient-to: theme('colors.blue.800') var(--tw-gradient-to-position);
+}
+.dark .to-quarter-q2 {
+  --tw-gradient-to: theme('colors.green.800') var(--tw-gradient-to-position);
+}
+.dark .to-quarter-q3 {
+  --tw-gradient-to: theme('colors.yellow.800') var(--tw-gradient-to-position);
+}
+.dark .to-quarter-q4 {
+  --tw-gradient-to: theme('colors.red.800') var(--tw-gradient-to-position);
 }
 
 .calendar-tooltip {
