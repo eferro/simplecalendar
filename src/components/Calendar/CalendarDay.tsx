@@ -18,9 +18,9 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, quarterColor }) => {
       <HoverCardTrigger asChild>
         <div
           className={cn(
-            "calendar-day group",
+            "calendar-day group relative",
             day.isCurrentMonth ? quarterColor : 'bg-background opacity-40',
-            day.isToday && 'border-2 border-black dark:border-white',
+            day.isToday && 'outline-2 outline outline-black dark:outline-white',
             isHovered && 'scale-[1.02]'
           )}
           onMouseEnter={() => setIsHovered(true)}
