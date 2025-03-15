@@ -17,6 +17,10 @@ const Calendar: React.FC = () => {
     setCurrentDate((prevDate) => navigateMonth(prevDate, 'next'));
   };
   
+  const handleToday = () => {
+    setCurrentDate(new Date());
+  };
+  
   // Get unique quarters in this view for the legend
   const uniqueQuarters = [...new Set(weeks.flatMap(week => 
     week.days.filter(day => day.isCurrentMonth).map(day => day.quarter)
@@ -29,6 +33,7 @@ const Calendar: React.FC = () => {
         year={year}
         onPrevMonth={handlePrevMonth}
         onNextMonth={handleNextMonth}
+        onToday={handleToday}
       />
       
       <div className="mb-4 flex items-center space-x-4 animate-slide-up">
