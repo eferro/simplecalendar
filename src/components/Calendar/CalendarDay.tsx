@@ -20,7 +20,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, quarterColor }) => {
           className={cn(
             "calendar-day group",
             day.isCurrentMonth ? quarterColor : 'bg-background opacity-40',
-            day.isToday && 'ring-2 ring-primary ring-offset-1',
+            day.isToday && 'border-2 border-black dark:border-white',
             isHovered && 'scale-[1.02]'
           )}
           onMouseEnter={() => setIsHovered(true)}
