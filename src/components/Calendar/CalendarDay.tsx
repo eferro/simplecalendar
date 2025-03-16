@@ -29,19 +29,20 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, quarterColor }) => {
         >
           <div className="h-full flex flex-col">
             <div className="flex justify-between p-1">
-              <span 
-                className={cn(
-                  "text-xs md:text-sm font-medium p-1 rounded-full w-6 h-6 md:w-7 md:h-7 flex items-center justify-center",
-                  day.isToday ? 'bg-primary text-primary-foreground' : 'group-hover:bg-background/80'
-                )}
-              >
-                {day.dayOfMonth}
+              <span className="text-xs opacity-70 px-1 invisible">
+                {day.dayOfYear}
               </span>
               <span className="text-xs opacity-70 px-1">
                 {day.dayOfYear}
               </span>
             </div>
-            <div className="flex-grow"></div>
+            
+            {/* Day number - centered, larger and bold */}
+            <div className="flex-grow flex items-center justify-center">
+              <span className="text-xl font-bold">
+                {day.dayOfMonth}
+              </span>
+            </div>
           </div>
         </div>
       </HoverCardTrigger>
