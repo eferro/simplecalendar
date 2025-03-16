@@ -1,3 +1,4 @@
+
 # Welcome to your Lovable project
 
 ## Project info
@@ -62,8 +63,22 @@ This project is built with .
 
 ## How can I deploy this project?
 
+### GitHub Pages
+
+To deploy to GitHub Pages:
+
+1. Run the deployment script:
+```sh
+node deploy.js
+```
+
+2. Your application will be built and deployed to the `gh-pages` branch of your repository.
+3. Once deployed, your site will be available at `https://<your-username>.github.io/<repository-name>/`
+
+### Custom Domain
+
+If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+
+## Lovable Deployment
+
 Simply open [Lovable](https://lovable.dev/projects/634c6bb7-f1b3-434a-b1bf-4aebd8a8bdbd) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
