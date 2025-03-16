@@ -8,11 +8,20 @@ export type CalendarDay = {
   isToday: boolean;
   weekNumber: number;
   quarter: number;
+  dayOfYear: number;
 };
 
 export type CalendarWeek = {
   weekNumber: number;
   days: CalendarDay[];
+};
+
+// Calculate day of year (1-365/366)
+export const getDayOfYear = (date: Date): number => {
+  const start = new Date(date.getFullYear(), 0, 0);
+  const diff = (date.getTime() - start.getTime()) + ((start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000);
+  const oneDay = 1000 * 60 * 60 * 24;
+  return Math.floor(diff / oneDay);
 };
 
 export const getDaysInMonth = (date: Date): CalendarWeek[] => {
@@ -39,6 +48,7 @@ export const getDaysInMonth = (date: Date): CalendarWeek[] => {
       const dayOfMonth = currentDay.getDate();
       const month = getMonth(currentDay) + 1; // 0-indexed to 1-indexed
       const quarter = Math.ceil(month / 3);
+      const dayOfYear = getDayOfYear(currentDay);
       
       const day: CalendarDay = {
         date: new Date(currentDay),
@@ -46,7 +56,8 @@ export const getDaysInMonth = (date: Date): CalendarWeek[] => {
         isCurrentMonth: isSameMonth(currentDay, date),
         isToday: isSameDay(currentDay, today),
         weekNumber,
-        quarter
+        quarter,
+        dayOfYear
       };
       
       week.push(day);
