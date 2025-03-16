@@ -8,9 +8,11 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 interface CalendarDayProps {
   day: CalendarDayType;
   quarterColor: string;
+  isSelected: boolean;
+  onSelect: () => void;
 }
 
-const CalendarDay: React.FC<CalendarDayProps> = ({ day, quarterColor }) => {
+const CalendarDay: React.FC<CalendarDayProps> = ({ day, quarterColor, isSelected, onSelect }) => {
   const [isHovered, setIsHovered] = useState(false);
   
   return (
@@ -18,14 +20,16 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, quarterColor }) => {
       <HoverCardTrigger asChild>
         <div
           className={cn(
-            "calendar-day group relative",
+            "calendar-day group relative cursor-pointer",
             quarterColor,
             day.isCurrentMonth ? "" : "opacity-40",
             day.isToday && 'outline-2 outline outline-black dark:outline-white',
+            isSelected && 'ring-2 ring-primary ring-offset-2',
             isHovered && 'scale-[1.02]'
           )}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
+          onClick={onSelect}
         >
           <div className="h-full flex flex-col">
             <div className="flex justify-between p-1">

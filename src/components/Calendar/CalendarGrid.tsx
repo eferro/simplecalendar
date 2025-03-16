@@ -1,3 +1,4 @@
+
 import React from 'react';
 import CalendarDay from './CalendarDay';
 import { getQuarterColor } from '@/utils/calendarUtils';
@@ -5,9 +6,11 @@ import type { CalendarWeek } from '@/utils/calendarUtils';
 
 interface CalendarGridProps {
   weeks: CalendarWeek[];
+  selectedDate: Date | null;
+  onSelectDay: (date: Date) => void;
 }
 
-const CalendarGrid: React.FC<CalendarGridProps> = ({ weeks }) => {
+const CalendarGrid: React.FC<CalendarGridProps> = ({ weeks, selectedDate, onSelectDay }) => {
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   
   const getWeekQuarterColor = (week: CalendarWeek) => {
@@ -56,6 +59,8 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ weeks }) => {
               key={dayIndex} 
               day={day} 
               quarterColor={getQuarterColor(day.quarter)}
+              isSelected={selectedDate ? day.date.getTime() === selectedDate.getTime() : false}
+              onSelect={() => onSelectDay(day.date)}
             />
           ))}
         </div>

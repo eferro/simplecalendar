@@ -193,3 +193,15 @@
   @apply absolute z-10 p-2 bg-white rounded-md shadow-md text-sm;
   max-width: 200px;
 }
+
+/* Selected day styling */
+.calendar-day.selected, 
+.calendar-day:has([aria-selected="true"]) {
+  @apply relative;
+}
+
+.calendar-day.selected::after,
+.calendar-day:has([aria-selected="true"])::after {
+  content: '';
+  @apply absolute inset-1 border-2 border-primary rounded-sm pointer-events-none;
+}
