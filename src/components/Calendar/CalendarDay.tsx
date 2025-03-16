@@ -19,7 +19,8 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, quarterColor }) => {
         <div
           className={cn(
             "calendar-day group relative",
-            day.isCurrentMonth ? quarterColor : 'bg-background opacity-40',
+            quarterColor,
+            day.isCurrentMonth ? "" : "opacity-40",
             day.isToday && 'outline-2 outline outline-black dark:outline-white',
             isHovered && 'scale-[1.02]'
           )}

@@ -19,10 +19,6 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ weeks }) => {
       // Sort quarters to ensure consistent gradient direction
       quarters.sort();
       
-      // Get the standard color classes (without the bg- prefix)
-      const q1Class = getQuarterColor(quarters[0]);
-      const q2Class = getQuarterColor(quarters[1]);
-      
       // Return a directly styled element with the gradient
       return `bg-gradient-to-r from-quarter-q${quarters[0]} to-quarter-q${quarters[1]}`;
     }

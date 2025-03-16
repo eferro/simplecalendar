@@ -22,9 +22,12 @@ const Calendar: React.FC = () => {
     setCurrentDate(new Date());
   };
   
-  // Get unique quarters in this view for the legend
-  const uniqueQuarters = [...new Set(weeks.flatMap(week => 
-    week.days.filter(day => day.isCurrentMonth).map(day => day.quarter)
+  // Get all quarters for the legend (1-4)
+  const allQuarters = [1, 2, 3, 4];
+  
+  // Find visible quarters in the current view (for highlighting current quarters)
+  const visibleQuarters = [...new Set(weeks.flatMap(week => 
+    week.days.map(day => day.quarter)
   ))].sort();
   
   return (
@@ -38,17 +41,22 @@ const Calendar: React.FC = () => {
       />
       
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 animate-slide-up">
-        <div className="flex items-center space-x-4 mb-2 md:mb-0">
+        <div className="flex items-center flex-wrap gap-3 mb-2 md:mb-0">
           <span className="text-sm font-medium">Quarters:</span>
-          {uniqueQuarters.map((quarter) => (
-            <div key={quarter} className="flex items-center">
-              <div 
-                className={`${getQuarterColor(quarter)} w-4 h-4 rounded mr-1`}
-                aria-hidden="true"
-              ></div>
-              <span className="text-sm">{getQuarterName(quarter)}</span>
-            </div>
-          ))}
+          {allQuarters.map((quarter) => {
+            const isVisible = visibleQuarters.includes(quarter);
+            return (
+              <div key={quarter} className="flex items-center">
+                <div 
+                  className={`${getQuarterColor(quarter)} w-4 h-4 rounded mr-1 ${!isVisible ? 'opacity-40' : ''}`}
+                  aria-hidden="true"
+                ></div>
+                <span className={`text-sm ${!isVisible ? 'text-muted-foreground' : ''}`}>
+                  {getQuarterName(quarter)}
+                </span>
+              </div>
+            );
+          })}
         </div>
         
         <div className="text-sm font-medium">
