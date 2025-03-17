@@ -289,3 +289,12 @@
   content: '';
   @apply absolute inset-1 border-2 border-primary rounded-sm pointer-events-none;
 }
+
+/* Mini calendar styles */
+.mini-calendar-day {
+  @apply text-center;
+}
+
+.mini-calendar-day:not(.opacity-40):hover {
+  @apply bg-accent text-accent-foreground;
+}

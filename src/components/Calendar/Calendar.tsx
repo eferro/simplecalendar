@@ -2,14 +2,19 @@
 import React, { useState } from 'react';
 import CalendarHeader from './CalendarHeader';
 import CalendarGrid from './CalendarGrid';
+import MiniCalendar from './MiniCalendar';
 import { getMonthData, navigateMonth, getDayOfYear } from '@/utils/calendarUtils';
 import { getQuarterName, getQuarterColor } from '@/utils/calendarUtils';
+import { addMonths, subMonths } from 'date-fns';
 
 const Calendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date()); // Today's date is selected by default
   const { weeks, monthName, year } = getMonthData(currentDate);
   const dayOfYear = selectedDate ? getDayOfYear(selectedDate) : '--';
+  
+  const prevMonthDate = subMonths(currentDate, 1);
+  const nextMonthDate = addMonths(currentDate, 1);
   
   const handlePrevMonth = () => {
     setCurrentDate((prevDate) => navigateMonth(prevDate, 'prev'));
@@ -79,6 +84,28 @@ const Calendar: React.FC = () => {
           weeks={weeks} 
           selectedDate={selectedDate}
           onSelectDay={handleSelectDay}
+        />
+      </div>
+      
+      {/* Mini Calendars */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <MiniCalendar 
+          date={prevMonthDate} 
+          currentDate={currentDate}
+          selectedDate={selectedDate}
+          onSelectDay={(date) => {
+            setCurrentDate(prevMonthDate);
+            handleSelectDay(date);
+          }}
+        />
+        <MiniCalendar 
+          date={nextMonthDate} 
+          currentDate={currentDate}
+          selectedDate={selectedDate}
+          onSelectDay={(date) => {
+            setCurrentDate(nextMonthDate);
+            handleSelectDay(date);
+          }}
         />
       </div>
     </div>
