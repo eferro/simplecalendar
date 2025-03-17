@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { CalendarDay as CalendarDayType } from '@/utils/calendarUtils';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CalendarDayProps {
   day: CalendarDayType;
@@ -14,6 +15,7 @@ interface CalendarDayProps {
 
 const CalendarDay: React.FC<CalendarDayProps> = ({ day, quarterColor, isSelected, onSelect }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const isMobile = useIsMobile();
   
   return (
     <HoverCard openDelay={100} closeDelay={100}>
@@ -36,9 +38,11 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, quarterColor, isSelected
               <span className="text-xs opacity-70 px-1 invisible">
                 {day.dayOfYear}
               </span>
-              <span className="text-xs opacity-70 px-1">
-                {day.dayOfYear}
-              </span>
+              {!isMobile && (
+                <span className="text-xs opacity-70 px-1">
+                  {day.dayOfYear}
+                </span>
+              )}
             </div>
             
             {/* Day number - centered, larger and bold */}
