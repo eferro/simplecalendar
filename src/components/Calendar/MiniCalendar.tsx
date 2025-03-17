@@ -18,7 +18,8 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({
   onSelectDay 
 }) => {
   const { weeks, monthName, year } = getMonthData(date);
-  const dayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  // Update day names to use three-letter abbreviations
+  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   
   return (
     <div className="mini-calendar rounded-lg border bg-card p-3 shadow-sm">
@@ -41,7 +42,7 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({
             <div
               key={`${week.weekNumber}-${dayIndex}`}
               className={cn(
-                "mini-calendar-day text-xs h-6 w-6 rounded-full flex items-center justify-center transition-colors",
+                "mini-calendar-day text-xs h-6 w-full flex items-center justify-center transition-colors",
                 day.isCurrentMonth ? "hover:bg-muted cursor-pointer" : "opacity-40",
                 day.isToday && "relative ring-1 ring-red-500",
                 selectedDate && isSameDay(day.date, selectedDate) && "bg-primary text-primary-foreground",
