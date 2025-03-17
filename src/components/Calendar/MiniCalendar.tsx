@@ -27,7 +27,12 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({
         <h3 className="text-sm font-medium">{monthName} {year}</h3>
       </div>
       
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-8 gap-1">
+        {/* Week number header */}
+        <div className="text-xs text-center text-muted-foreground h-6 flex items-center justify-center">
+          Wk
+        </div>
+        
         {dayNames.map((day, index) => (
           <div 
             key={index} 
@@ -37,23 +42,34 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({
           </div>
         ))}
         
-        {weeks.flatMap(week => 
-          week.days.map((day, dayIndex) => (
-            <div
-              key={`${week.weekNumber}-${dayIndex}`}
-              className={cn(
-                "mini-calendar-day text-xs h-6 w-full flex items-center justify-center transition-colors",
-                day.isCurrentMonth ? "hover:bg-muted cursor-pointer" : "opacity-40",
-                day.isToday && "relative ring-1 ring-red-500",
-                selectedDate && isSameDay(day.date, selectedDate) && "bg-primary text-primary-foreground",
-                getQuarterColor(day.quarter)
-              )}
-              onClick={() => day.isCurrentMonth && onSelectDay?.(day.date)}
-            >
-              {day.dayOfMonth}
+        {weeks.map((week, weekIndex) => (
+          <React.Fragment key={`week-${week.weekNumber}`}>
+            {/* Week number cell */}
+            <div className={cn(
+              "text-xs text-center text-muted-foreground h-6 flex items-center justify-center",
+              getQuarterColor(week.days[0].quarter)
+            )}>
+              {week.weekNumber}
             </div>
-          ))
-        )}
+            
+            {/* Day cells */}
+            {week.days.map((day, dayIndex) => (
+              <div
+                key={`${week.weekNumber}-${dayIndex}`}
+                className={cn(
+                  "mini-calendar-day text-xs h-6 w-full flex items-center justify-center transition-colors",
+                  day.isCurrentMonth ? "hover:bg-muted cursor-pointer" : "opacity-40",
+                  day.isToday && "relative ring-1 ring-red-500",
+                  selectedDate && isSameDay(day.date, selectedDate) && "bg-primary text-primary-foreground",
+                  getQuarterColor(day.quarter)
+                )}
+                onClick={() => day.isCurrentMonth && onSelectDay?.(day.date)}
+              >
+                {day.dayOfMonth}
+              </div>
+            ))}
+          </React.Fragment>
+        ))}
       </div>
     </div>
   );
