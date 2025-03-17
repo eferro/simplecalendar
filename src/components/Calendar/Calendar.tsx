@@ -7,7 +7,7 @@ import { getQuarterName, getQuarterColor } from '@/utils/calendarUtils';
 
 const Calendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date()); // Today's date is selected by default
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date()); // Today's date is selected by default
   const { weeks, monthName, year } = getMonthData(currentDate);
   const dayOfYear = selectedDate ? getDayOfYear(selectedDate) : '--';
   
@@ -26,7 +26,10 @@ const Calendar: React.FC = () => {
   };
   
   const handleSelectDay = (date: Date) => {
-    setSelectedDate(date);
+    // If the clicked date is already selected, unselect it
+    setSelectedDate(prevDate => 
+      prevDate && prevDate.getTime() === date.getTime() ? null : date
+    );
   };
   
   // Get all quarters for the legend (1-4)
