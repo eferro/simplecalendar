@@ -5,13 +5,14 @@ import CalendarGrid from './CalendarGrid';
 import MiniCalendar from './MiniCalendar';
 import { getMonthData, navigateMonth, getDayOfYear } from '@/utils/calendarUtils';
 import { getQuarterName, getQuarterColor } from '@/utils/calendarUtils';
-import { addMonths, subMonths } from 'date-fns';
+import { addMonths, subMonths, getWeek } from 'date-fns';
 
 const Calendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date()); // Today's date is selected by default
   const { weeks, monthName, year } = getMonthData(currentDate);
   const dayOfYear = selectedDate ? getDayOfYear(selectedDate) : '--';
+  const weekNumber = selectedDate ? getWeek(selectedDate, { weekStartsOn: 1 }) : '--';
   
   const prevMonthDate = subMonths(currentDate, 1);
   const nextMonthDate = addMonths(currentDate, 1);
@@ -74,8 +75,13 @@ const Calendar: React.FC = () => {
           })}
         </div>
         
-        <div className="text-sm font-medium">
-          Day of Year: <span className="font-bold">{dayOfYear}</span>
+        <div className="flex gap-4 text-sm font-medium">
+          <div>
+            Week: <span className="font-bold">{weekNumber}</span>
+          </div>
+          <div>
+            Day of Year: <span className="font-bold">{dayOfYear}</span>
+          </div>
         </div>
       </div>
       
