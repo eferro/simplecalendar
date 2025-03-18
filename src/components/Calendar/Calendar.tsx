@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CalendarHeader from './CalendarHeader';
 import CalendarGrid from './CalendarGrid';
 import MiniCalendar from './MiniCalendar';
 import { getMonthData, navigateMonth, getDayOfYear } from '@/utils/calendarUtils';
 import { getQuarterName, getQuarterColor } from '@/utils/calendarUtils';
-import { addMonths, subMonths, getWeek } from 'date-fns';
+import { addMonths, subMonths, getWeek, addDays } from 'date-fns';
 
 const Calendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -37,6 +37,61 @@ const Calendar: React.FC = () => {
       prevDate && prevDate.getTime() === date.getTime() ? null : date
     );
   };
+  
+  // Handle keyboard navigation
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (!selectedDate) {
+      // If no date is selected, select today when an arrow key is pressed
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        handleToday();
+        return;
+      }
+      return;
+    }
+
+    let newDate = new Date(selectedDate);
+    
+    switch (e.key) {
+      case 'ArrowUp':
+        // Move up one week (subtract 7 days)
+        newDate = addDays(selectedDate, -7);
+        break;
+      case 'ArrowDown':
+        // Move down one week (add 7 days)
+        newDate = addDays(selectedDate, 7);
+        break;
+      case 'ArrowLeft':
+        // Move left one day
+        newDate = addDays(selectedDate, -1);
+        break;
+      case 'ArrowRight':
+        // Move right one day
+        newDate = addDays(selectedDate, 1);
+        break;
+      default:
+        return;
+    }
+    
+    // Update selected date
+    setSelectedDate(newDate);
+    
+    // Update current month view if selected date moves to different month
+    if (newDate.getMonth() !== currentDate.getMonth() || 
+        newDate.getFullYear() !== currentDate.getFullYear()) {
+      setCurrentDate(newDate);
+    }
+    
+    // Prevent default browser scrolling with arrow keys
+    e.preventDefault();
+  };
+  
+  // Add keyboard event listener
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedDate, currentDate]);
   
   // Get all quarters for the legend (1-4)
   const allQuarters = [1, 2, 3, 4];
