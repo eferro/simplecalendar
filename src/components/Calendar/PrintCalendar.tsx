@@ -114,6 +114,18 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
                 color: #666;
                 display: block;
               }
+              .month-info {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 0.5cm;
+                font-size: 9pt;
+                color: #666;
+              }
+              .month-info div {
+                border: 1px solid #ddd;
+                padding: 4px 8px;
+                background-color: #f9f9f9;
+              }
             }
           </style>
         </head>
@@ -128,12 +140,27 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
       const quarter = Math.ceil(month / 3);
       const quarterClass = `q${quarter}`;
       
+      // Find initial and final day of year and weeks for this month
+      const firstDay = weeks[0].days.find(day => day.isCurrentMonth);
+      const lastDay = [...weeks].reverse()[0].days.reverse().find(day => day.isCurrentMonth);
+      
+      const initialDayOfYear = firstDay ? firstDay.dayOfYear : 0;
+      const finalDayOfYear = lastDay ? lastDay.dayOfYear : 0;
+      
+      const initialWeek = weeks[0].weekNumber;
+      const finalWeek = weeks[weeks.length - 1].weekNumber;
+      
       // Start month container
       htmlContent += `
         <div class="month-container ${quarterClass}">
           <div class="month-header">
             <div class="month-title">${monthName}</div>
             <div class="year">${year}</div>
+          </div>
+          <div class="month-info">
+            <div>Initial Day: ${initialDayOfYear} of ${year}</div>
+            <div>Final Day: ${finalDayOfYear} of ${year}</div>
+            <div>Week Range: ${initialWeek} - ${finalWeek}</div>
           </div>
           <table class="calendar-grid">
             <thead>
