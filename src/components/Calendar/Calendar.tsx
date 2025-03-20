@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import CalendarHeader from './CalendarHeader';
 import CalendarGrid from './CalendarGrid';
 import MiniCalendar from './MiniCalendar';
+import PrintCalendar from './PrintCalendar';
 import { getMonthData, navigateMonth, getDayOfYear } from '@/utils/calendarUtils';
 import { getQuarterName, getQuarterColor } from '@/utils/calendarUtils';
 import { addMonths, subMonths, getWeek, addDays } from 'date-fns';
@@ -103,13 +104,16 @@ const Calendar: React.FC = () => {
   
   return (
     <div className="calendar-container">
-      <CalendarHeader
-        monthName={monthName}
-        year={year}
-        onPrevMonth={handlePrevMonth}
-        onNextMonth={handleNextMonth}
-        onToday={handleToday}
-      />
+      <div className="flex justify-between items-center">
+        <CalendarHeader
+          monthName={monthName}
+          year={year}
+          onPrevMonth={handlePrevMonth}
+          onNextMonth={handleNextMonth}
+          onToday={handleToday}
+        />
+        <PrintCalendar currentDate={currentDate} />
+      </div>
       
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 animate-slide-up">
         <div className="flex items-center flex-wrap gap-3 mb-2 md:mb-0">
