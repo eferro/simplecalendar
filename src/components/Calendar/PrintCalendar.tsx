@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { format, addMonths, startOfYear, getMonth, getDaysInMonth } from 'date-fns';
+import { format, addMonths, startOfYear, getMonth } from 'date-fns';
 import { getMonthData, getQuarterColor } from '@/utils/calendarUtils';
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
@@ -141,8 +141,14 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
       const quarterClass = `q${quarter}`;
       
       // Find initial and final day of year and weeks for this month
-      const firstDay = weeks[0].days.find(day => day.isCurrentMonth);
-      const lastDay = [...weeks].reverse()[0].days.find(day => day.isCurrentMonth);
+      // Find the first day that belongs to the current month
+      const firstDay = weeks.flatMap(week => week.days)
+                           .find(day => day.isCurrentMonth);
+      
+      // Find the last day that belongs to the current month
+      const lastDay = [...weeks.flatMap(week => week.days)]
+                           .reverse()
+                           .find(day => day.isCurrentMonth);
       
       const initialDayOfYear = firstDay ? firstDay.dayOfYear : 0;
       const finalDayOfYear = lastDay ? lastDay.dayOfYear : 0;
@@ -192,7 +198,8 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
         `;
         
         // Add days in the week - ensuring they're in the correct order (Monday to Sunday)
-        week.days.forEach((day, index) => {
+        // The days are already in the correct order in the week.days array
+        week.days.forEach(day => {
           const quarterClass = `q${day.quarter}`;
           const todayClass = day.isToday ? 'today' : '';
           const otherMonthClass = !day.isCurrentMonth ? 'other-month' : '';
