@@ -142,7 +142,7 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
       
       // Find initial and final day of year and weeks for this month
       const firstDay = weeks[0].days.find(day => day.isCurrentMonth);
-      const lastDay = [...weeks].reverse()[0].days.reverse().find(day => day.isCurrentMonth);
+      const lastDay = [...weeks].reverse()[0].days.find(day => day.isCurrentMonth);
       
       const initialDayOfYear = firstDay ? firstDay.dayOfYear : 0;
       const finalDayOfYear = lastDay ? lastDay.dayOfYear : 0;
@@ -191,8 +191,8 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
           </td>
         `;
         
-        // Add days in the week
-        week.days.forEach(day => {
+        // Add days in the week - ensuring they're in the correct order (Monday to Sunday)
+        week.days.forEach((day, index) => {
           const quarterClass = `q${day.quarter}`;
           const todayClass = day.isToday ? 'today' : '';
           const otherMonthClass = !day.isCurrentMonth ? 'other-month' : '';

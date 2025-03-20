@@ -44,6 +44,7 @@ export const getDaysInMonth = (date: Date): CalendarWeek[] => {
       days: []
     };
     
+    // Create 7 days for this week (Monday through Sunday)
     for (let i = 0; i < 7; i++) {
       const dayOfMonth = currentDay.getDate();
       const month = getMonth(currentDay) + 1; // 0-indexed to 1-indexed
