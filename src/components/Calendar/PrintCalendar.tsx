@@ -39,13 +39,11 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
                 padding: 0;
                 margin: 0;
               }
-              .page-break {
-                page-break-after: always;
-              }
+              /* Removed page-break class to eliminate empty pages */
               .month-container {
                 width: 100%;
-                height: 100%;
                 padding: 1cm;
+                box-sizing: border-box;
               }
               .month-header {
                 display: flex;
@@ -63,12 +61,14 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
               }
               .calendar-grid {
                 width: 100%;
+                table-layout: fixed; /* Fixed table layout to manage column widths */
                 border-collapse: collapse;
               }
               .calendar-grid th, .calendar-grid td {
                 border: 1px solid #ddd;
-                padding: 8px;
+                padding: 6px;
                 text-align: center;
+                overflow: hidden; /* Prevent content overflow */
               }
               .calendar-grid th {
                 background-color: #f5f5f5;
@@ -77,6 +77,11 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
               .week-number {
                 background-color: #f5f5f5;
                 font-weight: bold;
+                width: 5%;
+              }
+              /* Set fixed widths for day columns */
+              .day-column {
+                width: 13%; /* Distribute remaining width (95%) among 7 days */
               }
               .day-of-month {
                 font-size: 14pt;
@@ -96,6 +101,19 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
               .q2 { background-color: rgba(187, 247, 208, 0.3); }
               .q3 { background-color: rgba(254, 240, 138, 0.3); }
               .q4 { background-color: rgba(254, 202, 202, 0.3); }
+              .quarter-indicator {
+                position: absolute;
+                top: 0;
+                right: 0;
+                font-size: 7pt;
+                color: #666;
+                padding: 1px 3px;
+              }
+              .week-quarter {
+                font-size: 7pt;
+                color: #666;
+                display: block;
+              }
             }
           </style>
         </head>
@@ -120,14 +138,14 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
           <table class="calendar-grid">
             <thead>
               <tr>
-                <th>Week</th>
-                <th>Monday</th>
-                <th>Tuesday</th>
-                <th>Wednesday</th>
-                <th>Thursday</th>
-                <th>Friday</th>
-                <th>Saturday</th>
-                <th>Sunday</th>
+                <th class="week-number">Week</th>
+                <th class="day-column">Monday</th>
+                <th class="day-column">Tuesday</th>
+                <th class="day-column">Wednesday</th>
+                <th class="day-column">Thursday</th>
+                <th class="day-column">Friday</th>
+                <th class="day-column">Saturday</th>
+                <th class="day-column">Sunday</th>
               </tr>
             </thead>
             <tbody>
@@ -135,8 +153,16 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
 
       // Add week rows
       weeks.forEach(week => {
+        // Get the quarter of the first day in the week (Monday)
+        const weekQuarter = week.days[0].quarter;
+        
         htmlContent += `<tr>`;
-        htmlContent += `<td class="week-number">${week.weekNumber}</td>`;
+        htmlContent += `
+          <td class="week-number">
+            ${week.weekNumber}
+            <span class="week-quarter">Q${weekQuarter}</span>
+          </td>
+        `;
         
         // Add days in the week
         week.days.forEach(day => {
@@ -145,7 +171,7 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
           const otherMonthClass = !day.isCurrentMonth ? 'other-month' : '';
           
           htmlContent += `
-            <td class="${quarterClass} ${todayClass} ${otherMonthClass}">
+            <td class="${quarterClass} ${todayClass} ${otherMonthClass} day-column">
               <div class="day-of-month">${day.dayOfMonth}</div>
               <div class="day-of-year">Day ${day.dayOfYear}</div>
             </td>
@@ -164,7 +190,7 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
       
       // Add page break after each month except the last one
       if (monthOffset < 11) {
-        htmlContent += `<div class="page-break"></div>`;
+        htmlContent += `<div style="page-break-after: always;"></div>`;
       }
     }
 
