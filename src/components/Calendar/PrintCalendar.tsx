@@ -39,17 +39,19 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
                 padding: 0;
                 margin: 0;
               }
-              /* Removed page-break class to eliminate empty pages */
               .month-container {
                 width: 100%;
-                padding: 1cm;
+                padding: 0.5cm;
                 box-sizing: border-box;
+                height: 90vh; /* Use 90% of viewport height */
+                display: flex;
+                flex-direction: column;
               }
               .month-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 1cm;
+                margin-bottom: 0.5cm;
               }
               .month-title {
                 font-size: 24pt;
@@ -63,35 +65,52 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
                 width: 100%;
                 table-layout: fixed; /* Fixed table layout to manage column widths */
                 border-collapse: collapse;
+                flex-grow: 1; /* Take up remaining vertical space */
               }
               .calendar-grid th, .calendar-grid td {
                 border: 1px solid #ddd;
                 padding: 6px;
                 text-align: center;
                 overflow: hidden; /* Prevent content overflow */
+                height: 12vh; /* Make cells taller */
+                vertical-align: top; /* Align content to the top */
               }
               .calendar-grid th {
                 background-color: #f5f5f5;
                 font-weight: bold;
+                height: auto; /* Reset height for header row */
               }
               .week-number {
                 background-color: #f5f5f5;
                 font-weight: bold;
                 width: 5%;
+                vertical-align: middle;
               }
               /* Set fixed widths for day columns */
               .day-column {
                 width: 13%; /* Distribute remaining width (95%) among 7 days */
+                position: relative;
+              }
+              .day-content {
+                display: flex;
+                align-items: flex-start;
+                justify-content: flex-start;
+                padding: 5px;
               }
               .day-of-month {
-                font-size: 14pt;
+                font-size: 18pt;
                 font-weight: bold;
+                margin-right: 5px;
               }
               .day-of-year {
-                font-size: 8pt;
-                color: #999;
+                font-size: 10pt;
+                color: #777;
+                margin-top: 3px;
               }
               .other-month {
+                color: #ccc;
+              }
+              .other-month .day-of-year {
                 color: #ccc;
               }
               .today {
@@ -206,8 +225,10 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
           
           htmlContent += `
             <td class="${quarterClass} ${todayClass} ${otherMonthClass} day-column">
-              <div class="day-of-month">${day.dayOfMonth}</div>
-              <div class="day-of-year">Day ${day.dayOfYear}</div>
+              <div class="day-content">
+                <span class="day-of-month">${day.dayOfMonth}</span>
+                <span class="day-of-year">${day.dayOfYear}</span>
+              </div>
             </td>
           `;
         });
