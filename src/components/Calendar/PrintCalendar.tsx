@@ -68,7 +68,7 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
                 flex-grow: 1; /* Take up remaining vertical space */
               }
               .calendar-grid th, .calendar-grid td {
-                border: 1px solid #ddd; /* Ensure border is visible for each cell */
+                border: 1px solid #ddd;
                 padding: 6px;
                 text-align: center;
                 overflow: hidden; /* Prevent content overflow */
@@ -94,7 +94,7 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
               .day-content {
                 display: flex;
                 align-items: flex-start;
-                justify-content: center; /* Center the content horizontally */
+                justify-content: flex-start;
                 padding: 5px;
               }
               .day-of-month {
