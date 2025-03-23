@@ -1,4 +1,3 @@
-
 import React from 'react';
 import CalendarDay from './CalendarDay';
 import { getQuarterColor } from '@/utils/calendarUtils';
@@ -31,15 +30,15 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ weeks, selectedDate, onSele
   };
   
   return (
-    <div className="calendar-grid animate-fade-in">
+    <div className="calendar-grid animate-fade-in border-2 border-gray-200">
       <div className="grid grid-cols-8 gap-px mb-px">
-        <div className="h-12 bg-muted/30 flex items-center justify-center font-medium text-sm">
+        <div className="h-12 bg-muted/30 flex items-center justify-center font-medium text-sm border-2 border-gray-200">
           Week
         </div>
         {dayNames.map((day) => (
           <div 
             key={day} 
-            className="h-12 bg-muted/30 flex items-center justify-center font-medium text-sm"
+            className="h-12 bg-muted/30 flex items-center justify-center font-medium text-sm border-2 border-gray-200"
           >
             {day}
           </div>
@@ -49,7 +48,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ weeks, selectedDate, onSele
       {weeks.map((week, weekIndex) => (
         <div key={weekIndex} className="grid grid-cols-8 gap-px mb-px">
           <div 
-            className={`week-number ${getWeekQuarterColor(week)}`}
+            className={`week-number ${getWeekQuarterColor(week)} border-2 border-gray-200`}
           >
             {week.weekNumber}
           </div>

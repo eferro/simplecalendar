@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import CalendarHeader from './CalendarHeader';
 import CalendarGrid from './CalendarGrid';
@@ -7,6 +6,9 @@ import PrintCalendar from './PrintCalendar';
 import { getMonthData, navigateMonth, getDayOfYear } from '@/utils/calendarUtils';
 import { getQuarterName, getQuarterColor } from '@/utils/calendarUtils';
 import { addMonths, subMonths, getWeek, addDays } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight, CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const Calendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -105,14 +107,49 @@ const Calendar: React.FC = () => {
   return (
     <div className="calendar-container">
       <div className="flex justify-between items-center">
-        <CalendarHeader
-          monthName={monthName}
-          year={year}
-          onPrevMonth={handlePrevMonth}
-          onNextMonth={handleNextMonth}
-          onToday={handleToday}
-        />
-        <PrintCalendar currentDate={currentDate} />
+        <div className="flex flex-col">
+          <h3 className="text-lg font-medium text-muted-foreground">{year}</h3>
+          <h2 className="text-3xl font-bold tracking-tight">{monthName}</h2>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleToday}
+              className="flex items-center gap-1"
+            >
+              <CalendarIcon className="h-4 w-4" />
+              <span>Today</span>
+            </Button>
+            
+            <div className="flex space-x-1">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handlePrevMonth}
+                className={cn(
+                  "rounded-full transition-all duration-300 hover:bg-secondary hover:scale-105"
+                )}
+              >
+                <ChevronLeft className="h-5 w-5" />
+                <span className="sr-only">Previous month</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleNextMonth}
+                className={cn(
+                  "rounded-full transition-all duration-300 hover:bg-secondary hover:scale-105"
+                )}
+              >
+                <ChevronRight className="h-5 w-5" />
+                <span className="sr-only">Next month</span>
+              </Button>
+            </div>
+          </div>
+          <PrintCalendar currentDate={currentDate} />
+        </div>
       </div>
       
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 animate-slide-up">

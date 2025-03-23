@@ -7,9 +7,6 @@ const Index: React.FC = () => {
     <div className="min-h-screen py-8 px-4 md:px-0">
       <header className="max-w-7xl mx-auto mb-8">
         <h1 className="text-4xl font-bold tracking-tight text-center">Calendar View</h1>
-        <p className="text-center text-muted-foreground mt-2">
-          A beautifully designed calendar with week numbers and quarter colors
-        </p>
       </header>
       
       <main>

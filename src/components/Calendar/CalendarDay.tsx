@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -22,7 +21,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, quarterColor, isSelected
       <HoverCardTrigger asChild>
         <div
           className={cn(
-            "calendar-day group relative cursor-pointer",
+            "calendar-day group relative cursor-pointer border-2 border-gray-200",
             quarterColor,
             day.isCurrentMonth ? "" : "opacity-40",
             day.isToday && 'today-highlight',
