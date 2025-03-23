@@ -1,84 +1,88 @@
+# Cheerful Calendar View 📅
 
-# Welcome to your Lovable project
+A modern, quarter-aware calendar application built with React and TypeScript. Features an intuitive interface for tracking dates, weeks, and quarters throughout the year.
 
-## Project info
+## ✨ Features
 
-**URL**: https://lovable.dev/projects/634c6bb7-f1b3-434a-b1bf-4aebd8a8bdbd
+- **Quarter-Based Visualization**: Color-coded quarters for easy period tracking
+- **Week & Day Tracking**: Display of week numbers and day of year
+- **Navigation**:
+  - Previous/Next month navigation
+  - Quick "Today" button
+  - Mini calendars for adjacent months
+- **Print Support**: Dedicated print view for calendar export
+- **Keyboard Navigation**: Arrow keys support for date selection
+- **Responsive Design**: Works on both desktop and mobile devices
 
-## How can I edit this code?
+## 🛠 Tech Stack
 
-There are several ways of editing your application.
+- **Framework**: React 18+
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui
+- **Build Tool**: Vite
+- **Date Utilities**: date-fns
 
-**Use Lovable**
+## 📁 Project Structure
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/634c6bb7-f1b3-434a-b1bf-4aebd8a8bdbd) and start prompting.
+```
+src/
+├── components/
+│   └── Calendar/
+│       ├── Calendar.tsx       # Main calendar component
+│       ├── CalendarDay.tsx    # Individual day cell
+│       ├── CalendarGrid.tsx   # Calendar grid layout
+│       ├── MiniCalendar.tsx   # Previous/Next month previews
+│       └── PrintCalendar.tsx  # Print-specific view
+├── utils/
+│   └── calendarUtils.ts      # Date and calendar helpers
+└── pages/
+    └── Index.tsx             # Main page component
+```
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Getting Started
 
-**Use your preferred IDE**
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/cheerful-calendar-view.git
+cd cheerful-calendar-view
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+2. Install dependencies:
+```bash
+npm install
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. Start the development server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
+## 📦 Deployment
 
 ### GitHub Pages
 
-To deploy to GitHub Pages:
+1. Configure your repository:
+   - Go to Settings > Pages
+   - Set source to "GitHub Actions"
 
-1. Run the deployment script:
-```sh
-node deploy.js
+2. Push to main branch:
+```bash
+git push origin main
 ```
 
-2. Your application will be built and deployed to the `gh-pages` branch of your repository.
-3. Once deployed, your site will be available at `https://<your-username>.github.io/<repository-name>/`
+The calendar will be automatically deployed to:
+`https://[your-username].github.io/cheerful-calendar-view/`
 
-### Custom Domain
+## 🤝 Contributing
 
-If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Lovable Deployment
+## 📝 License
 
-Simply open [Lovable](https://lovable.dev/projects/634c6bb7-f1b3-434a-b1bf-4aebd8a8bdbd) and click on Share -> Publish.
+MIT License - feel free to use this project for any purpose.
+
+---
+Made with ❤️ by eferro
