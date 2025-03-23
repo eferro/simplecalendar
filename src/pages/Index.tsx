@@ -8,13 +8,13 @@ const Index: React.FC = () => {
       <header className="max-w-7xl mx-auto mb-8">
         <h1 className="text-4xl font-bold tracking-tight text-center">Calendar View</h1>
       </header>
-      
+
       <main>
         <Calendar />
       </main>
-      
+
       <footer className="max-w-7xl mx-auto mt-12 pt-6 border-t text-center text-sm text-muted-foreground">
-        <p>Designed with precision and attention to detail</p>
+        <p><a href="https://www.eferro.net" target="_blank" rel="noopener noreferrer">Made with ❤️ by eferro</a></p>
       </footer>
     </div>
   );
