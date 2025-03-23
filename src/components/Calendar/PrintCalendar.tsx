@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format, addMonths, startOfYear, getMonth } from 'date-fns';
 import { getMonthData, getQuarterColor } from '@/utils/calendarUtils';
@@ -183,8 +182,7 @@ const PrintCalendar: React.FC<PrintCalendarProps> = ({ currentDate }) => {
             <div class="year">${year}</div>
           </div>
           <div class="month-info">
-            <div>Initial Day: ${initialDayOfYear} of ${year}</div>
-            <div>Final Day: ${finalDayOfYear} of ${year}</div>
+            <div>Day Range: ${initialDayOfYear}-${finalDayOfYear}</div>
             <div>Week Range: ${initialWeek} - ${finalWeek}</div>
           </div>
           <table class="calendar-grid">
