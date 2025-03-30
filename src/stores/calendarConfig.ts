@@ -1,10 +1,10 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { addMonths, setDate } from 'date-fns';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { addDays, addMonths, subDays } from 'date-fns';
 
 export type QuarterConfig = {
-  startDate: Date;
-  endDate: Date;
+  startDate: string; // ISO string
+  endDate: string;   // ISO string
   color: string;
 };
 
@@ -20,29 +20,40 @@ export type CalendarConfig = {
 const createQuarterDates = (startDay: number = 1) => {
   const year = new Date().getFullYear();
   const createQuarterDate = (monthIndex: number) => {
-    const date = new Date(year, monthIndex, startDay);
-    return date;
+    return new Date(year, monthIndex, startDay);
+  };
+
+  // Helper to get end date (day before next quarter starts)
+  const getEndDate = (startDate: Date, isLastQuarter: boolean) => {
+    if (isLastQuarter) {
+      // For Q4, end date is the day before Q1 starts next year
+      const nextYearQ1Start = new Date(startDate.getFullYear() + 1, 0, startDay);
+      return subDays(nextYearQ1Start, 1);
+    }
+    // For other quarters, end date is the day before next quarter starts
+    const nextQuarterStart = addMonths(startDate, 3);
+    return subDays(nextQuarterStart, 1);
   };
 
   return {
     1: {
-      startDate: createQuarterDate(0), // Jan
-      endDate: addMonths(createQuarterDate(0), 3),
+      startDate: createQuarterDate(0).toISOString(), // Jan
+      endDate: getEndDate(createQuarterDate(0), false).toISOString(),
       color: 'bg-quarter-q1'
     },
     2: {
-      startDate: createQuarterDate(3), // Apr
-      endDate: addMonths(createQuarterDate(3), 3),
+      startDate: createQuarterDate(3).toISOString(), // Apr
+      endDate: getEndDate(createQuarterDate(3), false).toISOString(),
       color: 'bg-quarter-q2'
     },
     3: {
-      startDate: createQuarterDate(6), // Jul
-      endDate: addMonths(createQuarterDate(6), 3),
+      startDate: createQuarterDate(6).toISOString(), // Jul
+      endDate: getEndDate(createQuarterDate(6), false).toISOString(),
       color: 'bg-quarter-q3'
     },
     4: {
-      startDate: createQuarterDate(9), // Oct
-      endDate: addMonths(createQuarterDate(9), 3),
+      startDate: createQuarterDate(9).toISOString(), // Oct
+      endDate: getEndDate(createQuarterDate(9), true).toISOString(),
       color: 'bg-quarter-q4'
     }
   };
@@ -84,6 +95,7 @@ export const useCalendarConfig = create<CalendarConfigStore>()(
     }),
     {
       name: 'calendar-config',
+      storage: createJSONStorage(() => localStorage),
     }
   )
 ); 

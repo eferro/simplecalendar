@@ -1,4 +1,4 @@
-import { addDays, addMonths, endOfMonth, endOfWeek, format, getDay, getMonth, getWeek, getYear, isSameDay, isSameMonth, startOfMonth, startOfWeek, subMonths, isWithinInterval } from 'date-fns';
+import { addDays, addMonths, endOfMonth, endOfWeek, format, getDay, getMonth, getWeek, getYear, isSameDay, isSameMonth, startOfMonth, startOfWeek, subMonths, isWithinInterval, parseISO } from 'date-fns';
 import { useCalendarConfig } from '@/stores/calendarConfig';
 import type { QuarterConfig } from '@/stores/calendarConfig';
 
@@ -28,7 +28,8 @@ export const getDayOfYear = (date: Date): number => {
 // Get quarter for a given date based on configuration
 export const getQuarterForDate = (date: Date, quarterConfig: Record<number, QuarterConfig>) => {
   // Adjust the year of quarter dates if needed
-  const adjustQuarterDates = (quarterDate: Date) => {
+  const adjustQuarterDates = (isoString: string) => {
+    const quarterDate = parseISO(isoString);
     const year = date.getFullYear();
     return new Date(year, quarterDate.getMonth(), quarterDate.getDate());
   };

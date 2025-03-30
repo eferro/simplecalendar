@@ -12,7 +12,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 const weekDays = [
   { value: '1', label: 'Monday (ISO Standard)' },
@@ -53,8 +53,8 @@ const CalendarConfig: React.FC = () => {
   };
 
   // Format date to show month and day
-  const formatQuarterDate = (date: Date) => {
-    return format(date, 'MMM d');
+  const formatQuarterDate = (isoString: string) => {
+    return format(parseISO(isoString), 'MMM d');
   };
 
   return (
