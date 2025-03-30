@@ -21,12 +21,13 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ weeks, selectedDate, onSele
       // Sort quarters to ensure consistent gradient direction
       quarters.sort();
       
-      // Return a directly styled element with the gradient
-      return `bg-gradient-to-r from-quarter-q${quarters[0]} to-quarter-q${quarters[1]}`;
+      // Return a directly styled element with the gradient with reduced opacity
+      return `bg-gradient-to-r from-quarter-q${quarters[0]}/40 to-quarter-q${quarters[1]}/40`;
     }
     
-    // Otherwise return the single quarter color
-    return getQuarterColor(quarters[0]);
+    // Otherwise return the single quarter color with reduced opacity
+    const baseColor = getQuarterColor(quarters[0]);
+    return `${baseColor}/40`;
   };
   
   return (
