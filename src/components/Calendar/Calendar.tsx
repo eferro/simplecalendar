@@ -107,53 +107,53 @@ const Calendar: React.FC = () => {
   return (
     <div className="calendar-container">
       {/* Header section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-        <div className="flex items-center justify-between w-full md:w-auto">
-          <div className="flex flex-col">
-            <h3 className="text-lg font-medium text-muted-foreground">{year}</h3>
-            <h2 className="text-3xl font-bold tracking-tight">{monthName}</h2>
-          </div>
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-4 mb-4 p-2 md:p-0">
+        {/* Left section: Month/Year */}
+        <div className="flex flex-col items-center md:items-start order-1">
+          <h3 className="text-lg font-medium text-muted-foreground">{year}</h3>
+          <h2 className="text-3xl font-bold tracking-tight">{monthName}</h2>
+        </div>
+        
+        {/* Center section: Navigation controls */}
+        <div className="flex items-center space-x-4 order-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleToday}
+            className="flex items-center gap-1 min-w-[90px]"
+          >
+            <CalendarIcon className="h-4 w-4" />
+            <span>Today</span>
+          </Button>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex space-x-2">
             <Button
               variant="outline"
-              size="sm"
-              onClick={handleToday}
-              className="flex items-center gap-1"
+              size="icon"
+              onClick={handlePrevMonth}
+              className={cn(
+                "rounded-full transition-all duration-300 hover:bg-secondary hover:scale-105"
+              )}
             >
-              <CalendarIcon className="h-4 w-4" />
-              <span>Today</span>
+              <ChevronLeft className="h-5 w-5" />
+              <span className="sr-only">Previous month</span>
             </Button>
-            
-            <div className="flex space-x-1">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handlePrevMonth}
-                className={cn(
-                  "rounded-full transition-all duration-300 hover:bg-secondary hover:scale-105"
-                )}
-              >
-                <ChevronLeft className="h-5 w-5" />
-                <span className="sr-only">Previous month</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleNextMonth}
-                className={cn(
-                  "rounded-full transition-all duration-300 hover:bg-secondary hover:scale-105"
-                )}
-              >
-                <ChevronRight className="h-5 w-5" />
-                <span className="sr-only">Next month</span>
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleNextMonth}
+              className={cn(
+                "rounded-full transition-all duration-300 hover:bg-secondary hover:scale-105"
+              )}
+            >
+              <ChevronRight className="h-5 w-5" />
+              <span className="sr-only">Next month</span>
+            </Button>
           </div>
         </div>
 
-        {/* Print button - hidden on mobile */}
-        <div className="hidden md:block">
+        {/* Right section: Print button */}
+        <div className="hidden md:block order-3">
           <PrintCalendar currentDate={currentDate} />
         </div>
       </div>
