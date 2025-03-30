@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { addMonths, setDate } from 'date-fns';
 
 export type QuarterConfig = {
-  startMonth: number; // 1-12
-  endMonth: number;   // 1-12
-  color: string;      // Tailwind color class
+  startDate: Date;
+  endDate: Date;
+  color: string;
 };
 
 export type CalendarConfig = {
@@ -12,22 +13,51 @@ export type CalendarConfig = {
   quarters: {
     [key: number]: QuarterConfig;
   };
+  quarterStartDay: number; // Day of month when quarters start
+};
+
+// Helper function to create quarter dates
+const createQuarterDates = (startDay: number = 1) => {
+  const year = new Date().getFullYear();
+  const createQuarterDate = (monthIndex: number) => {
+    const date = new Date(year, monthIndex, startDay);
+    return date;
+  };
+
+  return {
+    1: {
+      startDate: createQuarterDate(0), // Jan
+      endDate: addMonths(createQuarterDate(0), 3),
+      color: 'bg-quarter-q1'
+    },
+    2: {
+      startDate: createQuarterDate(3), // Apr
+      endDate: addMonths(createQuarterDate(3), 3),
+      color: 'bg-quarter-q2'
+    },
+    3: {
+      startDate: createQuarterDate(6), // Jul
+      endDate: addMonths(createQuarterDate(6), 3),
+      color: 'bg-quarter-q3'
+    },
+    4: {
+      startDate: createQuarterDate(9), // Oct
+      endDate: addMonths(createQuarterDate(9), 3),
+      color: 'bg-quarter-q4'
+    }
+  };
 };
 
 const defaultConfig: CalendarConfig = {
   weekStartsOn: 1, // Default to Monday
-  quarters: {
-    1: { startMonth: 1, endMonth: 3, color: 'bg-quarter-q1' },
-    2: { startMonth: 4, endMonth: 6, color: 'bg-quarter-q2' },
-    3: { startMonth: 7, endMonth: 9, color: 'bg-quarter-q3' },
-    4: { startMonth: 10, endMonth: 12, color: 'bg-quarter-q4' },
-  },
+  quarters: createQuarterDates(1), // Default to 1st of month
+  quarterStartDay: 1
 };
 
 type CalendarConfigStore = {
   config: CalendarConfig;
   setWeekStart: (weekStart: 0 | 1 | 2 | 3 | 4 | 5 | 6) => void;
-  setQuarterConfig: (quarter: number, config: QuarterConfig) => void;
+  setQuarterStartDay: (day: number) => void;
   resetConfig: () => void;
 };
 
@@ -39,16 +69,17 @@ export const useCalendarConfig = create<CalendarConfigStore>()(
         set((state) => ({
           config: { ...state.config, weekStartsOn: weekStart },
         })),
-      setQuarterConfig: (quarter, quarterConfig) =>
-        set((state) => ({
-          config: {
-            ...state.config,
-            quarters: {
-              ...state.config.quarters,
-              [quarter]: quarterConfig,
-            },
-          },
-        })),
+      setQuarterStartDay: (day) =>
+        set((state) => {
+          const newQuarters = createQuarterDates(day);
+          return {
+            config: {
+              ...state.config,
+              quarterStartDay: day,
+              quarters: newQuarters
+            }
+          };
+        }),
       resetConfig: () => set({ config: defaultConfig }),
     }),
     {

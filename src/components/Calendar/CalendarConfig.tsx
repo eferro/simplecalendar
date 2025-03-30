@@ -12,6 +12,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { format } from 'date-fns';
 
 const weekDays = [
   { value: '1', label: 'Monday (ISO Standard)' },
@@ -34,19 +35,26 @@ const months = [
   { value: '12', label: 'December' },
 ];
 
+// Generate array of days 1-31
+const days = Array.from({ length: 31 }, (_, i) => ({
+  value: String(i + 1),
+  label: String(i + 1)
+}));
+
 const CalendarConfig: React.FC = () => {
-  const { config, setWeekStart, setQuarterConfig, resetConfig } = useCalendarConfig();
+  const { config, setWeekStart, setQuarterStartDay, resetConfig } = useCalendarConfig();
 
   const handleWeekStartChange = (value: string) => {
     setWeekStart(Number(value) as 0 | 1 | 2 | 3 | 4 | 5 | 6);
   };
 
-  const handleQuarterChange = (quarter: number, type: 'start' | 'end', value: string) => {
-    const currentConfig = config.quarters[quarter];
-    setQuarterConfig(quarter, {
-      ...currentConfig,
-      [type + 'Month']: Number(value),
-    });
+  const handleQuarterStartDayChange = (value: string) => {
+    setQuarterStartDay(Number(value));
+  };
+
+  // Format date to show month and day
+  const formatQuarterDate = (date: Date) => {
+    return format(date, 'MMM d');
   };
 
   return (
@@ -88,50 +96,41 @@ const CalendarConfig: React.FC = () => {
           <Separator />
 
           <div className="space-y-4">
-            <h4 className="text-sm font-medium">Quarter Configuration</h4>
-            {[1, 2, 3, 4].map((quarter) => (
-              <div key={quarter} className="space-y-2">
-                <h5 className="text-sm font-medium text-muted-foreground">Quarter {quarter}</h5>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-xs text-muted-foreground">Start Month</label>
-                    <Select
-                      value={config.quarters[quarter].startMonth.toString()}
-                      onValueChange={(value) => handleQuarterChange(quarter, 'start', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select start month" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {months.map((month) => (
-                          <SelectItem key={month.value} value={month.value}>
-                            {month.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">Quarter Start Day</h4>
+              <Select
+                value={config.quarterStartDay.toString()}
+                onValueChange={handleQuarterStartDayChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select quarter start day" />
+                </SelectTrigger>
+                <SelectContent>
+                  {days.map((day) => (
+                    <SelectItem key={day.value} value={day.value}>
+                      Day {day.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                All quarters will start on this day of their respective months
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <h5 className="text-sm font-medium">Current Quarter Dates</h5>
+              <div className="space-y-1 text-sm">
+                {Object.entries(config.quarters).map(([quarter, { startDate, endDate }]) => (
+                  <div key={quarter} className="flex justify-between items-center">
+                    <span className="font-medium">Q{quarter}:</span>
+                    <span className="text-muted-foreground">
+                      {formatQuarterDate(startDate)} - {formatQuarterDate(endDate)}
+                    </span>
                   </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground">End Month</label>
-                    <Select
-                      value={config.quarters[quarter].endMonth.toString()}
-                      onValueChange={(value) => handleQuarterChange(quarter, 'end', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select end month" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {months.map((month) => (
-                          <SelectItem key={month.value} value={month.value}>
-                            {month.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
 
           <div className="flex justify-end">

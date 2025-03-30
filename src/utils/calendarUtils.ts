@@ -1,5 +1,6 @@
-import { addDays, addMonths, endOfMonth, endOfWeek, format, getDay, getMonth, getWeek, getYear, isSameDay, isSameMonth, startOfMonth, startOfWeek, subMonths } from 'date-fns';
+import { addDays, addMonths, endOfMonth, endOfWeek, format, getDay, getMonth, getWeek, getYear, isSameDay, isSameMonth, startOfMonth, startOfWeek, subMonths, isWithinInterval } from 'date-fns';
 import { useCalendarConfig } from '@/stores/calendarConfig';
+import type { QuarterConfig } from '@/stores/calendarConfig';
 
 export type CalendarDay = {
   date: Date;
@@ -24,17 +25,40 @@ export const getDayOfYear = (date: Date): number => {
   return Math.floor(diff / oneDay);
 };
 
-// Get quarter for a given month based on configuration
-export const getQuarterForMonth = (month: number, quarterConfig: Record<number, { startMonth: number; endMonth: number }>) => {
+// Get quarter for a given date based on configuration
+export const getQuarterForDate = (date: Date, quarterConfig: Record<number, QuarterConfig>) => {
+  // Adjust the year of quarter dates if needed
+  const adjustQuarterDates = (quarterDate: Date) => {
+    const year = date.getFullYear();
+    return new Date(year, quarterDate.getMonth(), quarterDate.getDate());
+  };
+
   for (const [quarter, config] of Object.entries(quarterConfig)) {
-    if (month >= config.startMonth && month <= config.endMonth) {
+    const startDate = adjustQuarterDates(config.startDate);
+    const endDate = adjustQuarterDates(config.endDate);
+    
+    // Handle year transition for Q4
+    if (Number(quarter) === 4 && date.getMonth() === 0) {
+      const prevYearStart = new Date(startDate);
+      prevYearStart.setFullYear(date.getFullYear() - 1);
+      const prevYearEnd = new Date(endDate);
+      prevYearEnd.setFullYear(date.getFullYear());
+      
+      if (isWithinInterval(date, { start: prevYearStart, end: prevYearEnd })) {
+        return 4;
+      }
+    }
+    
+    if (isWithinInterval(date, { start: startDate, end: endDate })) {
       return Number(quarter);
     }
   }
-  return Math.ceil(month / 3); // Fallback to default quarter calculation
+  
+  // If no quarter found (shouldn't happen), return based on month
+  return Math.ceil((date.getMonth() + 1) / 3);
 };
 
-export const getDaysInMonth = (date: Date, weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1, quarterConfig?: Record<number, { startMonth: number; endMonth: number }>) => {
+export const getDaysInMonth = (date: Date, weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1, quarterConfig?: Record<number, QuarterConfig>) => {
   const startDate = startOfMonth(date);
   const endDate = endOfMonth(date);
   const startWeek = startOfWeek(startDate, { weekStartsOn });
@@ -57,10 +81,9 @@ export const getDaysInMonth = (date: Date, weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 |
     // Create 7 days for this week
     for (let i = 0; i < 7; i++) {
       const dayOfMonth = currentDay.getDate();
-      const month = getMonth(currentDay) + 1; // 0-indexed to 1-indexed
       const quarter = quarterConfig 
-        ? getQuarterForMonth(month, quarterConfig)
-        : Math.ceil(month / 3);
+        ? getQuarterForDate(currentDay, quarterConfig)
+        : Math.ceil((getMonth(currentDay) + 1) / 3);
       const dayOfYear = getDayOfYear(currentDay);
       
       const day: CalendarDay = {
@@ -84,7 +107,7 @@ export const getDaysInMonth = (date: Date, weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 |
   return weeksInMonth;
 };
 
-export const getMonthData = (date: Date, weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1, quarterConfig?: Record<number, { startMonth: number; endMonth: number }>) => {
+export const getMonthData = (date: Date, weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1, quarterConfig?: Record<number, QuarterConfig>) => {
   return {
     weeks: getDaysInMonth(date, weekStartsOn, quarterConfig),
     monthName: format(date, 'MMMM'),
