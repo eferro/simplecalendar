@@ -106,12 +106,14 @@ const Calendar: React.FC = () => {
   
   return (
     <div className="calendar-container">
-      <div className="flex justify-between items-center">
-        <div className="flex flex-col">
-          <h3 className="text-lg font-medium text-muted-foreground">{year}</h3>
-          <h2 className="text-3xl font-bold tracking-tight">{monthName}</h2>
-        </div>
-        <div className="flex items-center gap-4">
+      {/* Header section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+        <div className="flex items-center justify-between w-full md:w-auto">
+          <div className="flex flex-col">
+            <h3 className="text-lg font-medium text-muted-foreground">{year}</h3>
+            <h2 className="text-3xl font-bold tracking-tight">{monthName}</h2>
+          </div>
+          
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
@@ -148,12 +150,18 @@ const Calendar: React.FC = () => {
               </Button>
             </div>
           </div>
+        </div>
+
+        {/* Print button - hidden on mobile */}
+        <div className="hidden md:block">
           <PrintCalendar currentDate={currentDate} />
         </div>
       </div>
       
+      {/* Info section */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 animate-slide-up">
-        <div className="flex items-center flex-wrap gap-3 mb-2 md:mb-0">
+        {/* Quarters legend - hidden on mobile */}
+        <div className="hidden md:flex items-center flex-wrap gap-3">
           <span className="text-sm font-medium">Quarters:</span>
           {allQuarters.map((quarter) => {
             const isVisible = visibleQuarters.includes(quarter);
@@ -176,7 +184,7 @@ const Calendar: React.FC = () => {
             Week: <span className="font-bold">{weekNumber}</span>
           </div>
           <div>
-            Day of Year: <span className="font-bold">{dayOfYear}</span>
+            Day: <span className="font-bold">{dayOfYear}</span>
           </div>
         </div>
       </div>
