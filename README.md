@@ -1,4 +1,4 @@
-# Cheerful Calendar View 📅
+# Simple Calendar View 📅
 
 A modern, quarter-aware calendar application built with React and TypeScript. Features an intuitive interface for tracking dates, weeks, and quarters throughout the year.
 
@@ -44,8 +44,8 @@ src/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/cheerful-calendar-view.git
-cd cheerful-calendar-view
+git clone https://github.com/yourusername/simplecalendar.git
+cd simplecalendar
 ```
 
 2. Install dependencies:
@@ -74,7 +74,7 @@ git push origin main
 ```
 
 The calendar will be automatically deployed to:
-`https://[your-username].github.io/cheerful-calendar-view/`
+`https://[your-username].github.io/simplecalendar/`
 
 ## 🤝 Contributing
 

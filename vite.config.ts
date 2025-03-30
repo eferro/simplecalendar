@@ -5,7 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: '/cheerful-calendar-view/', // Set base URL for GitHub Pages
+  base: '/simplecalendar/', // Set base URL for GitHub Pages
   server: {
     host: "::",
     port: 8080,
