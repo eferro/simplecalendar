@@ -9,13 +9,16 @@ import { addMonths, subMonths, getWeek, addDays } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import CalendarConfig from './CalendarConfig';
+import { useCalendarConfig } from '@/stores/calendarConfig';
 
 const Calendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date()); // Today's date is selected by default
-  const { weeks, monthName, year } = getMonthData(currentDate);
+  const { config } = useCalendarConfig();
+  const { weeks, monthName, year } = getMonthData(currentDate, config.weekStartsOn, config.quarters);
   const dayOfYear = selectedDate ? getDayOfYear(selectedDate) : '--';
-  const weekNumber = selectedDate ? getWeek(selectedDate, { weekStartsOn: 1 }) : '--';
+  const weekNumber = selectedDate ? getWeek(selectedDate, { weekStartsOn: config.weekStartsOn }) : '--';
   
   const prevMonthDate = subMonths(currentDate, 1);
   const nextMonthDate = addMonths(currentDate, 1);
@@ -107,26 +110,26 @@ const Calendar: React.FC = () => {
   return (
     <div className="calendar-container">
       {/* Header section */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-4 mb-4 p-2 md:p-0">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
         {/* Left section: Month/Year */}
-        <div className="flex flex-col items-center md:items-start order-1">
+        <div className="flex flex-col items-center md:items-start">
           <h3 className="text-lg font-medium text-muted-foreground">{year}</h3>
           <h2 className="text-3xl font-bold tracking-tight">{monthName}</h2>
         </div>
         
         {/* Center section: Navigation controls */}
-        <div className="flex items-center space-x-4 order-2">
+        <div className="flex items-center space-x-4">
           <Button
             variant="outline"
             size="sm"
             onClick={handleToday}
-            className="flex items-center gap-1 min-w-[90px]"
+            className="flex items-center gap-1"
           >
             <CalendarIcon className="h-4 w-4" />
             <span>Today</span>
           </Button>
           
-          <div className="flex space-x-2">
+          <div className="flex space-x-1">
             <Button
               variant="outline"
               size="icon"
@@ -152,8 +155,9 @@ const Calendar: React.FC = () => {
           </div>
         </div>
 
-        {/* Right section: Print button */}
-        <div className="hidden md:block order-3">
+        {/* Right section: Print button and Settings */}
+        <div className="hidden md:flex items-center space-x-2">
+          <CalendarConfig />
           <PrintCalendar currentDate={currentDate} />
         </div>
       </div>

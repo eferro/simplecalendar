@@ -2,6 +2,7 @@ import React from 'react';
 import CalendarDay from './CalendarDay';
 import { getQuarterColor } from '@/utils/calendarUtils';
 import type { CalendarWeek } from '@/utils/calendarUtils';
+import { useCalendarConfig } from '@/stores/calendarConfig';
 
 interface CalendarGridProps {
   weeks: CalendarWeek[];
@@ -10,7 +11,14 @@ interface CalendarGridProps {
 }
 
 const CalendarGrid: React.FC<CalendarGridProps> = ({ weeks, selectedDate, onSelectDay }) => {
-  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const { config } = useCalendarConfig();
+  const allDayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  
+  // Rotate the day names array based on weekStartsOn
+  const dayNames = [
+    ...allDayNames.slice(config.weekStartsOn === 0 ? 6 : config.weekStartsOn - 1),
+    ...allDayNames.slice(0, config.weekStartsOn === 0 ? 6 : config.weekStartsOn - 1)
+  ];
   
   const getWeekQuarterColor = (week: CalendarWeek) => {
     // Get all unique quarters in this week

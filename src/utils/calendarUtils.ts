@@ -1,5 +1,5 @@
-
 import { addDays, addMonths, endOfMonth, endOfWeek, format, getDay, getMonth, getWeek, getYear, isSameDay, isSameMonth, startOfMonth, startOfWeek, subMonths } from 'date-fns';
+import { useCalendarConfig } from '@/stores/calendarConfig';
 
 export type CalendarDay = {
   date: Date;
@@ -24,11 +24,21 @@ export const getDayOfYear = (date: Date): number => {
   return Math.floor(diff / oneDay);
 };
 
-export const getDaysInMonth = (date: Date): CalendarWeek[] => {
+// Get quarter for a given month based on configuration
+export const getQuarterForMonth = (month: number, quarterConfig: Record<number, { startMonth: number; endMonth: number }>) => {
+  for (const [quarter, config] of Object.entries(quarterConfig)) {
+    if (month >= config.startMonth && month <= config.endMonth) {
+      return Number(quarter);
+    }
+  }
+  return Math.ceil(month / 3); // Fallback to default quarter calculation
+};
+
+export const getDaysInMonth = (date: Date, weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1, quarterConfig?: Record<number, { startMonth: number; endMonth: number }>) => {
   const startDate = startOfMonth(date);
   const endDate = endOfMonth(date);
-  const startWeek = startOfWeek(startDate, { weekStartsOn: 1 }); // Monday
-  const endWeek = endOfWeek(endDate, { weekStartsOn: 1 });
+  const startWeek = startOfWeek(startDate, { weekStartsOn });
+  const endWeek = endOfWeek(endDate, { weekStartsOn });
   
   const today = new Date();
   const weeksInMonth: CalendarWeek[] = [];
@@ -37,18 +47,20 @@ export const getDaysInMonth = (date: Date): CalendarWeek[] => {
   
   while (currentDay <= endWeek) {
     const week: CalendarDay[] = [];
-    const weekNumber = getWeek(currentDay, { weekStartsOn: 1 });
+    const weekNumber = getWeek(currentDay, { weekStartsOn });
     
     let weekObj: CalendarWeek = {
       weekNumber,
       days: []
     };
     
-    // Create 7 days for this week (Monday through Sunday)
+    // Create 7 days for this week
     for (let i = 0; i < 7; i++) {
       const dayOfMonth = currentDay.getDate();
       const month = getMonth(currentDay) + 1; // 0-indexed to 1-indexed
-      const quarter = Math.ceil(month / 3);
+      const quarter = quarterConfig 
+        ? getQuarterForMonth(month, quarterConfig)
+        : Math.ceil(month / 3);
       const dayOfYear = getDayOfYear(currentDay);
       
       const day: CalendarDay = {
@@ -72,9 +84,9 @@ export const getDaysInMonth = (date: Date): CalendarWeek[] => {
   return weeksInMonth;
 };
 
-export const getMonthData = (date: Date) => {
+export const getMonthData = (date: Date, weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1, quarterConfig?: Record<number, { startMonth: number; endMonth: number }>) => {
   return {
-    weeks: getDaysInMonth(date),
+    weeks: getDaysInMonth(date, weekStartsOn, quarterConfig),
     monthName: format(date, 'MMMM'),
     year: getYear(date)
   };
