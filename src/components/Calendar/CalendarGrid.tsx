@@ -21,6 +21,11 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ weeks, selectedDate, onSele
   ];
   
   const getWeekQuarterColor = (week: CalendarWeek) => {
+    // Handle empty days array
+    if (!week.days || week.days.length === 0) {
+      return 'bg-muted/30';
+    }
+
     // Get all unique quarters in this week
     const quarters = [...new Set(week.days.map(day => day.quarter))];
     
