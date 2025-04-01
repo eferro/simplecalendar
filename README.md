@@ -26,6 +26,7 @@ A modern, quarter-aware calendar application built with React and TypeScript. Fe
 - **State Management**: Zustand
 - **Form Handling**: React Hook Form
 - **Data Visualization**: Recharts
+- **Testing**: Vitest, React Testing Library, MSW
 
 ## 📁 Project Structure
 
@@ -45,6 +46,7 @@ src/
 ├── lib/                         # Utility libraries and configurations
 ├── pages/                       # Page components
 ├── stores/                      # Zustand state stores
+├── test/                        # Test setup and utilities
 └── utils/                       # Helper functions and utilities
 ```
 
@@ -75,6 +77,29 @@ The application will be available at `http://localhost:5173`
 - `npm run build:dev` - Build for development
 - `npm run lint` - Run ESLint
 - `npm run preview` - Preview production build
+- `npm test` - Run tests in watch mode
+- `npm run test:coverage` - Run tests with coverage report
+- `npm run test:ui` - Run tests with UI interface
+
+## 🧪 Testing
+
+The project uses a comprehensive testing setup:
+
+- **Unit Testing**: Vitest + React Testing Library
+- **Integration Testing**: Component interaction tests
+- **API Mocking**: MSW (Mock Service Worker)
+- **Coverage Reporting**: V8 coverage
+
+### Current Test Status
+
+- **Passing Tests**: 2/2
+- **Coverage**:
+  - Statements: 8.46%
+  - Branches: 20.58%
+  - Functions: 13.15%
+  - Lines: 8.46%
+
+> Note: Coverage is currently low as we're in the early stages of test implementation. We're actively working on improving test coverage.
 
 ## 📦 Deployment
 
