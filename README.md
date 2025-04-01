@@ -13,6 +13,7 @@ A modern, quarter-aware calendar application built with React and TypeScript. Fe
 - **Print Support**: Dedicated print view for calendar export
 - **Keyboard Navigation**: Arrow keys support for date selection
 - **Responsive Design**: Works on both desktop and mobile devices
+- **Calendar Configuration**: Customizable settings for calendar display
 
 ## 🛠 Tech Stack
 
@@ -22,22 +23,29 @@ A modern, quarter-aware calendar application built with React and TypeScript. Fe
 - **UI Components**: shadcn/ui
 - **Build Tool**: Vite
 - **Date Utilities**: date-fns
+- **State Management**: Zustand
+- **Form Handling**: React Hook Form
+- **Data Visualization**: Recharts
 
 ## 📁 Project Structure
 
 ```
 src/
 ├── components/
-│   └── Calendar/
-│       ├── Calendar.tsx       # Main calendar component
-│       ├── CalendarDay.tsx    # Individual day cell
-│       ├── CalendarGrid.tsx   # Calendar grid layout
-│       ├── MiniCalendar.tsx   # Previous/Next month previews
-│       └── PrintCalendar.tsx  # Print-specific view
-├── utils/
-│   └── calendarUtils.ts      # Date and calendar helpers
-└── pages/
-    └── Index.tsx             # Main page component
+│   ├── Calendar/
+│   │   ├── Calendar.tsx         # Main calendar component
+│   │   ├── CalendarConfig.tsx   # Calendar configuration panel
+│   │   ├── CalendarDay.tsx      # Individual day cell
+│   │   ├── CalendarGrid.tsx     # Calendar grid layout
+│   │   ├── CalendarHeader.tsx   # Calendar header with navigation
+│   │   ├── MiniCalendar.tsx     # Previous/Next month previews
+│   │   └── PrintCalendar.tsx    # Print-specific view
+│   └── ui/                      # Reusable UI components
+├── hooks/                       # Custom React hooks
+├── lib/                         # Utility libraries and configurations
+├── pages/                       # Page components
+├── stores/                      # Zustand state stores
+└── utils/                       # Helper functions and utilities
 ```
 
 ## 🚀 Getting Started
@@ -58,7 +66,15 @@ npm install
 npm run dev
 ```
 
-The application will be available at `http://localhost:8080`
+The application will be available at `http://localhost:5173`
+
+## 📦 Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run build:dev` - Build for development
+- `npm run lint` - Run ESLint
+- `npm run preview` - Preview production build
 
 ## 📦 Deployment
 
