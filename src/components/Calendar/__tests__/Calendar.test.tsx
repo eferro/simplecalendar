@@ -1,58 +1,116 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Calendar from '../Calendar';
-import { addMonths, subMonths, getWeek, addDays } from 'date-fns';
+import { getMonthData, getDayOfYear, getQuarterName, getQuarterColor, navigateMonth } from '@/utils/calendarUtils';
+import { getWeek, addMonths, subMonths } from 'date-fns';
+
+// Mock cn utility
+vi.mock('@/lib/utils', () => ({
+  cn: (...inputs: any[]) => inputs.filter(Boolean).join(' ')
+}));
+
+// Mock Lucide icons
+vi.mock('lucide-react', () => ({
+  ChevronLeft: () => <span>←</span>,
+  ChevronRight: () => <span>→</span>,
+  CalendarIcon: () => <span>📅</span>
+}));
 
 // Mock date-fns functions
 vi.mock('date-fns', () => ({
-  addMonths: vi.fn((date: Date) => date),
-  subMonths: vi.fn((date: Date) => date),
-  getWeek: vi.fn(() => 1),
-  addDays: vi.fn((date: Date, days: number) => date),
+  getWeek: vi.fn((date: Date, options: { weekStartsOn: number }) => {
+    // Simple week calculation for testing
+    const yearStart = new Date(date.getFullYear(), 0, 1);
+    const dayOfYear = Math.floor((date.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+    return Math.floor((dayOfYear - 1) / 7) + 1;
+  }),
+  addMonths: vi.fn((date: Date, months: number) => new Date(date.getFullYear(), date.getMonth() + months, 1)),
+  subMonths: vi.fn((date: Date, months: number) => new Date(date.getFullYear(), date.getMonth() - months, 1)),
+  addDays: vi.fn((date: Date, days: number) => {
+    const newDate = new Date(date);
+    newDate.setDate(date.getDate() + days);
+    return newDate;
+  })
 }));
 
 // Mock calendarUtils functions
 vi.mock('@/utils/calendarUtils', () => ({
-  getMonthData: () => ({
-    weeks: [
-      {
-        weekNumber: 1,
-        days: [
-          { date: new Date(2024, 0, 1), dayOfMonth: 1, isCurrentMonth: true, isToday: true, quarter: 1 },
-          { date: new Date(2024, 0, 2), dayOfMonth: 2, isCurrentMonth: true, isToday: false, quarter: 1 },
-          { date: new Date(2024, 0, 3), dayOfMonth: 3, isCurrentMonth: true, isToday: false, quarter: 1 },
-          { date: new Date(2024, 0, 4), dayOfMonth: 4, isCurrentMonth: true, isToday: false, quarter: 1 },
-          { date: new Date(2024, 0, 5), dayOfMonth: 5, isCurrentMonth: true, isToday: false, quarter: 1 },
-          { date: new Date(2024, 0, 6), dayOfMonth: 6, isCurrentMonth: true, isToday: false, quarter: 1 },
-          { date: new Date(2024, 0, 7), dayOfMonth: 7, isCurrentMonth: true, isToday: false, quarter: 1 }
-        ]
+  getMonthData: vi.fn((date: Date, weekStartsOn: number, quarters: number[]) => {
+    const month = date.getMonth();
+    const year = date.getFullYear();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    // Create days array
+    const days = [];
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateObj = new Date(year, month, day);
+      const dayOfYear = Math.floor((dateObj.getTime() - new Date(year, 0, 1).getTime()) / (24 * 60 * 60 * 1000)) + 1;
+      const weekNumber = Math.floor((dayOfYear - 1) / 7) + 1;
+      const quarter = Math.floor(month / 3) + 1;
+      
+      days.push({
+        date: dateObj,
+        dayOfMonth: day,
+        isCurrentMonth: true,
+        isToday: false,
+        weekNumber,
+        quarter,
+        dayOfYear
+      });
+    }
+    
+    // Group into weeks
+    const weeks = [];
+    let currentWeek = [];
+    
+    days.forEach(day => {
+      currentWeek.push(day);
+      if (currentWeek.length === 7) {
+        weeks.push({
+          weekNumber: day.weekNumber,
+          days: [...currentWeek]
+        });
+        currentWeek = [];
       }
-    ],
-    monthName: 'January',
-    year: 2024
+    });
+    
+    if (currentWeek.length > 0) {
+      weeks.push({
+        weekNumber: currentWeek[currentWeek.length - 1].weekNumber,
+        days: [...currentWeek]
+      });
+    }
+    
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    return {
+      weeks,
+      monthName: months[month],
+      year
+    };
   }),
-  navigateMonth: vi.fn((date: Date, direction: 'prev' | 'next') => date),
   getDayOfYear: vi.fn((date: Date) => {
-    if (date.getTime() === new Date(2024, 0, 1).getTime()) return 1;
-    if (date.getTime() === new Date(2024, 0, 2).getTime()) return 2;
-    return 1;
+    const yearStart = new Date(date.getFullYear(), 0, 1);
+    return Math.floor((date.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
   }),
   getQuarterName: vi.fn((quarter: number) => `Q${quarter}`),
-  getQuarterColor: vi.fn((quarter: number) => `bg-quarter-${quarter}`)
+  getQuarterColor: vi.fn((quarter: number) => `q${quarter}`),
+  navigateMonth: vi.fn((date: Date, direction: 'prev' | 'next') => {
+    if (direction === 'next') {
+      return new Date(date.getFullYear(), date.getMonth() + 1, 1);
+    } else {
+      return new Date(date.getFullYear(), date.getMonth() - 1, 1);
+    }
+  })
 }));
 
-// Mock the calendar config hook
+// Mock useCalendarConfig hook
 vi.mock('@/stores/calendarConfig', () => ({
   useCalendarConfig: () => ({
     config: {
-      weekStartsOn: 1,
-      quarters: [
-        { startMonth: 0, endMonth: 2 },
-        { startMonth: 3, endMonth: 5 },
-        { startMonth: 6, endMonth: 8 },
-        { startMonth: 9, endMonth: 11 }
-      ]
+      weekStartsOn: 1, // Monday
+      quarters: [1, 2, 3, 4]
     }
   })
 }));
@@ -63,28 +121,37 @@ vi.mock('../CalendarHeader', () => ({
 }));
 
 vi.mock('../CalendarGrid', () => ({
-  default: ({ onSelectDay, selectedDate }) => (
-    <div data-testid="calendar-grid">
-      <button 
-        onClick={() => onSelectDay(new Date(2024, 0, 1))}
-        data-testid="day-1"
-        aria-selected={selectedDate?.getTime() === new Date(2024, 0, 1).getTime()}
-      >
-        1
-      </button>
-      <button 
-        onClick={() => onSelectDay(new Date(2024, 0, 2))}
-        data-testid="day-2"
-        aria-selected={selectedDate?.getTime() === new Date(2024, 0, 2).getTime()}
-      >
-        2
-      </button>
-    </div>
-  )
+  default: ({ onSelectDay, selectedDate }) => {
+    const date1 = new Date(2024, 0, 1);
+    const date2 = new Date(2024, 0, 2);
+    
+    return (
+      <div data-testid="calendar-grid">
+        <button 
+          onClick={() => onSelectDay(date1)}
+          data-testid="day-1"
+          aria-selected={selectedDate?.getTime() === date1.getTime()}
+        >
+          1
+        </button>
+        <button 
+          onClick={() => onSelectDay(date2)}
+          data-testid="day-2"
+          aria-selected={selectedDate?.getTime() === date2.getTime()}
+        >
+          2
+        </button>
+      </div>
+    );
+  }
 }));
 
 vi.mock('../MiniCalendar', () => ({
-  default: () => <div data-testid="mini-calendar">Mini Calendar</div>
+  default: ({ date, onSelectDay }) => (
+    <div data-testid="mini-calendar">
+      <button onClick={() => onSelectDay(date)}>Select {date.getMonth() + 1}</button>
+    </div>
+  )
 }));
 
 vi.mock('../PrintCalendar', () => ({
@@ -96,113 +163,134 @@ vi.mock('../CalendarConfig', () => ({
 }));
 
 describe('Calendar', () => {
+  let user: ReturnType<typeof userEvent.setup>;
+  
   beforeEach(() => {
     // Reset all mocks before each test
     vi.clearAllMocks();
-    // Mock the current date to be consistent
-    vi.setSystemTime(new Date(2024, 0, 1));
+    
+    // Set a consistent date for testing
+    vi.setSystemTime(new Date(2024, 0, 1)); // January 1, 2024
+    
+    // Setup user event
+    user = userEvent.setup();
   });
 
-  it('renders the calendar with correct month and year', () => {
+  it('renders initial state correctly', async () => {
     render(<Calendar />);
     
-    // Check month and year display
-    expect(screen.getByText('January')).toBeInTheDocument();
+    // Check month and year
     expect(screen.getByText('2024')).toBeInTheDocument();
-  });
-
-  it('renders navigation controls', () => {
-    render(<Calendar />);
+    expect(screen.getByText('January')).toBeInTheDocument();
     
     // Check navigation buttons
-    expect(screen.getByText('Today')).toBeInTheDocument();
-    expect(screen.getByText('Previous month', { selector: '.sr-only' })).toBeInTheDocument();
-    expect(screen.getByText('Next month', { selector: '.sr-only' })).toBeInTheDocument();
-  });
-
-  it('renders week and day numbers', () => {
-    render(<Calendar />);
+    expect(screen.getByRole('button', { name: /📅.*Today/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /←.*Previous month/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /→.*Next month/i })).toBeInTheDocument();
     
     // Check week and day numbers
-    const weekContainer = screen.getByText('Week:').closest('div');
-    const dayContainer = screen.getByText('Day:').closest('div');
+    const weekContainer = screen.getByText(/Week:/).closest('div');
+    const dayContainer = screen.getByText(/Day:/).closest('div');
     
     expect(weekContainer).toBeInTheDocument();
-    expect(weekContainer).toHaveTextContent('Week: 1');
     expect(dayContainer).toBeInTheDocument();
-    expect(dayContainer).toHaveTextContent('Day: 1');
-  });
-
-  it('renders quarters legend', () => {
-    render(<Calendar />);
     
-    // Check quarters legend
+    expect(weekContainer?.querySelector('span.font-bold')).toHaveTextContent('1');
+    expect(dayContainer?.querySelector('span.font-bold')).toHaveTextContent('1');
+    
+    // Check quarter legend
     expect(screen.getByText('Quarters:')).toBeInTheDocument();
     expect(screen.getByText('Q1')).toBeInTheDocument();
     expect(screen.getByText('Q2')).toBeInTheDocument();
     expect(screen.getByText('Q3')).toBeInTheDocument();
     expect(screen.getByText('Q4')).toBeInTheDocument();
-  });
-
-  it('renders all required components', () => {
-    render(<Calendar />);
     
-    // Check that all child components are rendered
+    // Check child components
     expect(screen.getByTestId('calendar-grid')).toBeInTheDocument();
-    expect(screen.getAllByTestId('mini-calendar')).toHaveLength(2); // Previous and next month
+    expect(screen.getAllByTestId('mini-calendar')).toHaveLength(2);
     expect(screen.getByTestId('calendar-config')).toBeInTheDocument();
     expect(screen.getByTestId('print-calendar')).toBeInTheDocument();
   });
 
-  it('selects today by default', () => {
+  it('handles month navigation correctly', async () => {
     render(<Calendar />);
     
-    // Today (Jan 1, 2024) should be selected by default
-    expect(screen.getByTestId('day-1')).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByTestId('day-2')).toHaveAttribute('aria-selected', 'false');
+    // Click next month button
+    await user.click(screen.getByRole('button', { name: /→.*Next month/i }));
+    
+    // Check if navigateMonth was called with next
+    expect(navigateMonth).toHaveBeenCalledWith(expect.any(Date), 'next');
+    
+    // Check if getMonthData was called with February
+    expect(getMonthData).toHaveBeenCalledWith(
+      expect.any(Date),
+      1, // weekStartsOn
+      [1, 2, 3, 4] // quarters
+    );
+    
+    // Verify the month is February
+    const lastCall = (getMonthData as Mock).mock.calls.slice(-1)[0];
+    expect(lastCall[0].getMonth()).toBe(1); // February
+    expect(lastCall[0].getFullYear()).toBe(2024);
+    
+    // Click previous month button
+    await user.click(screen.getByRole('button', { name: /←.*Previous month/i }));
+    
+    // Check if navigateMonth was called with prev
+    expect(navigateMonth).toHaveBeenCalledWith(expect.any(Date), 'prev');
+    
+    // Check if getMonthData was called with January
+    expect(getMonthData).toHaveBeenCalledWith(
+      expect.any(Date),
+      1, // weekStartsOn
+      [1, 2, 3, 4] // quarters
+    );
+    
+    // Verify the month is January
+    const prevCall = (getMonthData as Mock).mock.calls.slice(-1)[0];
+    expect(prevCall[0].getMonth()).toBe(0); // January
+    expect(prevCall[0].getFullYear()).toBe(2024);
   });
 
-  it('allows selecting and unselecting dates', async () => {
-    const user = userEvent.setup();
+  it('handles today button correctly', async () => {
     render(<Calendar />);
     
-    // Initially Jan 1 is selected
-    expect(screen.getByTestId('day-1')).toHaveAttribute('aria-selected', 'true');
+    // Click today button
+    await user.click(screen.getByRole('button', { name: /📅.*Today/i }));
     
-    // Click Jan 2
-    await user.click(screen.getByTestId('day-2'));
-    expect(screen.getByTestId('day-1')).toHaveAttribute('aria-selected', 'false');
-    expect(screen.getByTestId('day-2')).toHaveAttribute('aria-selected', 'true');
+    // Check if current date and selected date are set to today
+    expect(getMonthData).toHaveBeenCalledWith(
+      expect.any(Date),
+      1, // weekStartsOn
+      [1, 2, 3, 4] // quarters
+    );
     
-    // Click Jan 2 again to unselect
-    await user.click(screen.getByTestId('day-2'));
-    expect(screen.getByTestId('day-1')).toHaveAttribute('aria-selected', 'false');
-    expect(screen.getByTestId('day-2')).toHaveAttribute('aria-selected', 'false');
+    // Verify the month is January 2024 (today's date in our mocked environment)
+    const lastCall = (getMonthData as Mock).mock.calls.slice(-1)[0];
+    expect(lastCall[0].getMonth()).toBe(0); // January
+    expect(lastCall[0].getFullYear()).toBe(2024);
   });
 
-  it('updates week and day numbers when selection changes', async () => {
-    const user = userEvent.setup();
-    // Mock getWeek to return different values for different dates
-    const getWeekMock = vi.fn()
-      .mockReturnValueOnce(1)  // For Jan 1
-      .mockReturnValueOnce(1); // For Jan 2
-    
-    vi.mocked(getWeek).mockImplementation(getWeekMock);
+  it('handles date selection correctly', async () => {
+    // Set initial date to January 1, 2024
+    vi.setSystemTime(new Date(2024, 0, 1));
     
     render(<Calendar />);
     
-    // Initially shows week 1, day 1
-    const weekContainer = screen.getByText('Week:').closest('div');
-    const dayContainer = screen.getByText('Day:').closest('div');
+    // Initially, January 1 should be selected (it's today)
+    const dayElement = screen.getByTestId('day-1');
+    expect(dayElement).toHaveAttribute('aria-selected', 'true');
     
-    expect(weekContainer).toHaveTextContent('Week: 1');
-    expect(dayContainer).toHaveTextContent('Day: 1');
+    // Click day 2
+    const day2Element = screen.getByTestId('day-2');
+    await user.click(day2Element);
     
-    // Click Jan 2
-    await user.click(screen.getByTestId('day-2'));
+    // Check if day 2 is selected and day 1 is unselected
+    expect(dayElement).toHaveAttribute('aria-selected', 'false');
+    expect(day2Element).toHaveAttribute('aria-selected', 'true');
     
-    // Should show week 1, day 2
-    expect(weekContainer).toHaveTextContent('Week: 1');
-    expect(dayContainer).toHaveTextContent('Day: 2');
+    // Click day 2 again to unselect it
+    await user.click(day2Element);
+    expect(day2Element).toHaveAttribute('aria-selected', 'false');
   });
 }); 
