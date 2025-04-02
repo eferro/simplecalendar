@@ -178,4 +178,52 @@ describe('PrintCalendar', () => {
     expect(writtenContent).toContain('<td class="week-number">\n            1');
     expect(writtenContent).toContain('<td class="week-number">\n            5');
   });
+
+  it('includes correct print window styling', () => {
+    // Mock window object for print window
+    const mockPrintWindow = {
+      document: {
+        write: vi.fn(),
+        close: vi.fn()
+      },
+      print: vi.fn(),
+      close: vi.fn()
+    };
+    
+    // Mock window.open to return our mock window
+    mockOpen.mockReturnValue(mockPrintWindow);
+    
+    render(<PrintCalendar currentDate={new Date(2024, 0, 1)} />);
+    
+    // Click print button
+    fireEvent.click(screen.getByRole('button'));
+    
+    // Get the written content
+    const writtenContent = mockPrintWindow.document.write.mock.calls[0][0];
+    
+    // Verify print-specific styles
+    expect(writtenContent).toContain('@media print');
+    expect(writtenContent).toContain('@page {');
+    expect(writtenContent).toContain('size: landscape');
+    expect(writtenContent).toContain('margin: 0.5cm');
+    
+    // Verify quarter color classes
+    expect(writtenContent).toContain('.q1 { background-color: rgba(191, 219, 254, 0.3); }');
+    expect(writtenContent).toContain('.q2 { background-color: rgba(187, 247, 208, 0.3); }');
+    expect(writtenContent).toContain('.q3 { background-color: rgba(254, 240, 138, 0.3); }');
+    expect(writtenContent).toContain('.q4 { background-color: rgba(254, 202, 202, 0.3); }');
+    
+    // Verify layout styles
+    expect(writtenContent).toContain('.month-container');
+    expect(writtenContent).toContain('.calendar-grid');
+    expect(writtenContent).toContain('.week-number');
+    expect(writtenContent).toContain('.day-column');
+    expect(writtenContent).toContain('.day-content');
+    
+    // Verify typography styles
+    expect(writtenContent).toContain('font-family: Arial, sans-serif');
+    expect(writtenContent).toContain('font-size: 24pt');
+    expect(writtenContent).toContain('font-size: 18pt');
+    expect(writtenContent).toContain('font-size: 10pt');
+  });
 }); 
