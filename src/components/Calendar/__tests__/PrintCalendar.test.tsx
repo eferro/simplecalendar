@@ -187,4 +187,90 @@ describe('PrintCalendar', () => {
     expect(writtenContent).toContain('class="month-container q4"'); // October
     expect(writtenContent).toContain('class="month-container q4"'); // December
   });
+
+  it('displays months in correct sequence', () => {
+    // Mock window object for print window
+    const mockPrintWindow = {
+      document: {
+        write: vi.fn(),
+        close: vi.fn()
+      },
+      print: vi.fn(),
+      close: vi.fn()
+    };
+    
+    // Mock window.open to return our mock window
+    mockOpen.mockReturnValue(mockPrintWindow);
+    
+    // Mock getMonthData to return different months
+    const getMonthDataMock = vi.fn((date: Date) => {
+      const month = date.getMonth();
+      const quarter = Math.floor(month / 3) + 1;
+      const day: CalendarDay = {
+        date: new Date(2024, month, 1),
+        dayOfMonth: 1,
+        isCurrentMonth: true,
+        isToday: false,
+        weekNumber: 1,
+        quarter,
+        dayOfYear: 1
+      };
+      const week: CalendarWeek = {
+        weekNumber: 1,
+        days: [day]
+      };
+      return {
+        weeks: [week],
+        monthName: ['January', 'February', 'March', 'April', 'May', 'June', 
+                    'July', 'August', 'September', 'October', 'November', 'December'][month],
+        year: 2024
+      };
+    });
+    
+    // Update the mock implementation
+    vi.mocked(getMonthData).mockImplementation(getMonthDataMock);
+    
+    render(<PrintCalendar currentDate={new Date(2024, 0, 1)} />);
+    
+    // Click print button
+    fireEvent.click(screen.getByRole('button'));
+    
+    // Get the written content
+    const writtenContent = mockPrintWindow.document.write.mock.calls[0][0];
+    
+    // Check that months are displayed in correct sequence
+    expect(writtenContent).toContain('January');
+    expect(writtenContent).toContain('February');
+    expect(writtenContent).toContain('March');
+    expect(writtenContent).toContain('April');
+    expect(writtenContent).toContain('May');
+    expect(writtenContent).toContain('June');
+    expect(writtenContent).toContain('July');
+    expect(writtenContent).toContain('August');
+    expect(writtenContent).toContain('September');
+    expect(writtenContent).toContain('October');
+    expect(writtenContent).toContain('November');
+    expect(writtenContent).toContain('December');
+    
+    // Check that months are in the correct order
+    const monthIndices = [
+      writtenContent.indexOf('January'),
+      writtenContent.indexOf('February'),
+      writtenContent.indexOf('March'),
+      writtenContent.indexOf('April'),
+      writtenContent.indexOf('May'),
+      writtenContent.indexOf('June'),
+      writtenContent.indexOf('July'),
+      writtenContent.indexOf('August'),
+      writtenContent.indexOf('September'),
+      writtenContent.indexOf('October'),
+      writtenContent.indexOf('November'),
+      writtenContent.indexOf('December')
+    ];
+    
+    // Verify that each month appears after the previous one
+    for (let i = 1; i < monthIndices.length; i++) {
+      expect(monthIndices[i]).toBeGreaterThan(monthIndices[i - 1]);
+    }
+  });
 }); 
