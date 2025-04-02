@@ -13,11 +13,12 @@ export default defineConfig({
     hookTimeout: 10000,
     coverage: {
       provider: 'v8',
-      reporter: ['text'],
+      reporter: ['text', 'json', 'lcov'],
       exclude: [
         'node_modules/',
         'src/test/setup.ts',
       ],
+      reportsDirectory: './coverage'
     },
     include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],
     exclude: ['node_modules', 'dist'],
