@@ -1,103 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import CalendarHeader from './CalendarHeader';
 import CalendarGrid from './CalendarGrid';
 import MiniCalendar from './MiniCalendar';
 import PrintCalendar from './PrintCalendar';
-import { getMonthData, navigateMonth, getDayOfYear } from '@/utils/calendarUtils';
+import { getMonthData, getDayOfYear } from '@/utils/calendarUtils';
 import { getQuarterName, getQuarterColor } from '@/utils/calendarUtils';
-import { addMonths, subMonths, getWeek, addDays } from 'date-fns';
+import { getWeek, addMonths, subMonths } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import CalendarConfig from './CalendarConfig';
 import { useCalendarConfig } from '@/stores/calendarConfig';
+import { useCalendarState } from '@/hooks/useCalendarState';
+import { useCalendarKeyboard } from '@/hooks/useCalendarKeyboard';
 
 const Calendar: React.FC = () => {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date()); // Today's date is selected by default
   const { config } = useCalendarConfig();
+  const {
+    state: { currentDate, selectedDate },
+    handlePrevMonth,
+    handleNextMonth,
+    handleToday,
+    handleSelectDay,
+    handleUpdateCurrentDate,
+  } = useCalendarState();
+
   const { weeks, monthName, year } = getMonthData(currentDate, config.weekStartsOn, config.quarters);
   const dayOfYear = selectedDate ? getDayOfYear(selectedDate) : '--';
   const weekNumber = selectedDate ? getWeek(selectedDate, { weekStartsOn: config.weekStartsOn }) : '--';
   
   const prevMonthDate = subMonths(currentDate, 1);
   const nextMonthDate = addMonths(currentDate, 1);
-  
-  const handlePrevMonth = () => {
-    setCurrentDate((prevDate) => navigateMonth(prevDate, 'prev'));
-  };
-  
-  const handleNextMonth = () => {
-    setCurrentDate((prevDate) => navigateMonth(prevDate, 'next'));
-  };
-  
-  const handleToday = () => {
-    const today = new Date();
-    setCurrentDate(today);
-    setSelectedDate(today);
-  };
-  
-  const handleSelectDay = (date: Date) => {
-    // If the clicked date is already selected, unselect it
-    setSelectedDate(prevDate => 
-      prevDate && prevDate.getTime() === date.getTime() ? null : date
-    );
-  };
-  
-  // Handle keyboard navigation
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (!selectedDate) {
-      // If no date is selected, select today when an arrow key is pressed
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        handleToday();
-        return;
-      }
-      return;
-    }
 
-    let newDate = new Date(selectedDate);
-    
-    switch (e.key) {
-      case 'ArrowUp':
-        // Move up one week (subtract 7 days)
-        newDate = addDays(selectedDate, -7);
-        break;
-      case 'ArrowDown':
-        // Move down one week (add 7 days)
-        newDate = addDays(selectedDate, 7);
-        break;
-      case 'ArrowLeft':
-        // Move left one day
-        newDate = addDays(selectedDate, -1);
-        break;
-      case 'ArrowRight':
-        // Move right one day
-        newDate = addDays(selectedDate, 1);
-        break;
-      default:
-        return;
-    }
-    
-    // Update selected date
-    setSelectedDate(newDate);
-    
-    // Update current month view if selected date moves to different month
-    if (newDate.getMonth() !== currentDate.getMonth() || 
-        newDate.getFullYear() !== currentDate.getFullYear()) {
-      setCurrentDate(newDate);
-    }
-    
-    // Prevent default browser scrolling with arrow keys
-    e.preventDefault();
-  };
-  
-  // Add keyboard event listener
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [selectedDate, currentDate]);
+  // Use keyboard navigation hook
+  useCalendarKeyboard({
+    selectedDate,
+    currentDate,
+    onSelectDate: handleSelectDay,
+    onUpdateCurrentDate: handleUpdateCurrentDate,
+  });
   
   // Get all quarters for the legend (1-4)
   const allQuarters = [1, 2, 3, 4];
@@ -108,7 +49,12 @@ const Calendar: React.FC = () => {
   ))].sort();
   
   return (
-    <div className="calendar-container">
+    <div 
+      className="calendar-container"
+      role="region"
+      aria-label="Calendar"
+      tabIndex={0}
+    >
       {/* Header section */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
         {/* Left section: Month/Year */}
@@ -124,12 +70,13 @@ const Calendar: React.FC = () => {
             size="sm"
             onClick={handleToday}
             className="flex items-center gap-1"
+            aria-label="Go to today"
           >
-            <CalendarIcon className="h-4 w-4" />
+            <CalendarIcon className="h-4 w-4" aria-hidden="true" />
             <span>Today</span>
           </Button>
           
-          <div className="flex space-x-1">
+          <div className="flex space-x-1" role="group" aria-label="Month navigation">
             <Button
               variant="outline"
               size="icon"
@@ -137,8 +84,9 @@ const Calendar: React.FC = () => {
               className={cn(
                 "rounded-full transition-all duration-300 hover:bg-secondary hover:scale-105"
               )}
+              aria-label="Previous month"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-5 w-5" aria-hidden="true" />
               <span className="sr-only">Previous month</span>
             </Button>
             <Button
@@ -148,8 +96,9 @@ const Calendar: React.FC = () => {
               className={cn(
                 "rounded-full transition-all duration-300 hover:bg-secondary hover:scale-105"
               )}
+              aria-label="Next month"
             >
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-5 w-5" aria-hidden="true" />
               <span className="sr-only">Next month</span>
             </Button>
           </div>
@@ -165,7 +114,11 @@ const Calendar: React.FC = () => {
       {/* Info section */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 animate-slide-up">
         {/* Quarters legend - hidden on mobile */}
-        <div className="hidden md:flex items-center flex-wrap gap-3">
+        <div 
+          className="hidden md:flex items-center flex-wrap gap-3"
+          role="group"
+          aria-label="Calendar quarters"
+        >
           <span className="text-sm font-medium">Quarters:</span>
           {allQuarters.map((quarter) => {
             const isVisible = visibleQuarters.includes(quarter);
@@ -193,7 +146,11 @@ const Calendar: React.FC = () => {
         </div>
       </div>
       
-      <div className="bg-card rounded-xl shadow-sm overflow-hidden border">
+      <div 
+        className="bg-card rounded-xl shadow-sm overflow-hidden border"
+        role="grid"
+        aria-label={`Calendar for ${monthName} ${year}`}
+      >
         <CalendarGrid 
           weeks={weeks} 
           selectedDate={selectedDate}
@@ -202,13 +159,17 @@ const Calendar: React.FC = () => {
       </div>
       
       {/* Mini Calendars */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+      <div 
+        className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6"
+        role="group"
+        aria-label="Adjacent months"
+      >
         <MiniCalendar 
           date={prevMonthDate} 
           currentDate={currentDate}
           selectedDate={selectedDate}
           onSelectDay={(date) => {
-            setCurrentDate(prevMonthDate);
+            handleUpdateCurrentDate(prevMonthDate);
             handleSelectDay(date);
           }}
         />
@@ -217,7 +178,7 @@ const Calendar: React.FC = () => {
           currentDate={currentDate}
           selectedDate={selectedDate}
           onSelectDay={(date) => {
-            setCurrentDate(nextMonthDate);
+            handleUpdateCurrentDate(nextMonthDate);
             handleSelectDay(date);
           }}
         />

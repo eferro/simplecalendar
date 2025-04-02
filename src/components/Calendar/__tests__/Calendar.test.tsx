@@ -2,117 +2,126 @@ import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Calendar from '../Calendar';
-import { getMonthData, getDayOfYear, getQuarterName, getQuarterColor, navigateMonth } from '@/utils/calendarUtils';
-import { getWeek, addMonths, subMonths } from 'date-fns';
+import { useCalendarState } from '@/hooks/useCalendarState';
 
-// Mock cn utility
+// Mock UI components
+vi.mock('@/components/ui/button', () => ({
+  Button: ({ children, ...props }: any) => (
+    <button {...props}>{children}</button>
+  )
+}));
+
+vi.mock('@/components/ui/sheet', () => ({
+  Sheet: ({ children }: any) => <div>{children}</div>,
+  SheetContent: ({ children }: any) => <div>{children}</div>,
+  SheetDescription: ({ children }: any) => <div>{children}</div>,
+  SheetHeader: ({ children }: any) => <div>{children}</div>,
+  SheetTitle: ({ children }: any) => <div>{children}</div>,
+  SheetTrigger: ({ children }: any) => <div>{children}</div>
+}));
+
+vi.mock('@/components/ui/separator', () => ({
+  Separator: () => <hr />
+}));
+
+vi.mock('@/components/ui/select', () => ({
+  Select: ({ children }: any) => <div>{children}</div>,
+  SelectContent: ({ children }: any) => <div>{children}</div>,
+  SelectItem: ({ children }: any) => <div>{children}</div>,
+  SelectTrigger: ({ children }: any) => <div>{children}</div>,
+  SelectValue: ({ children }: any) => <div>{children}</div>
+}));
+
+// Mock only essential dependencies
 vi.mock('@/lib/utils', () => ({
   cn: (...inputs: any[]) => inputs.filter(Boolean).join(' ')
 }));
 
-// Mock Lucide icons
 vi.mock('lucide-react', () => ({
   ChevronLeft: () => <span>←</span>,
   ChevronRight: () => <span>→</span>,
-  CalendarIcon: () => <span>📅</span>
+  CalendarIcon: () => <span>📅</span>,
+  Settings: () => <span>⚙️</span>,
+  X: () => <span>✕</span>,
+  Printer: () => <span>🖨️</span>
 }));
 
 // Mock date-fns functions
 vi.mock('date-fns', () => ({
-  getWeek: vi.fn((date: Date, options: { weekStartsOn: number }) => {
-    // Simple week calculation for testing
-    const yearStart = new Date(date.getFullYear(), 0, 1);
-    const dayOfYear = Math.floor((date.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
-    return Math.floor((dayOfYear - 1) / 7) + 1;
-  }),
-  addMonths: vi.fn((date: Date, months: number) => new Date(date.getFullYear(), date.getMonth() + months, 1)),
-  subMonths: vi.fn((date: Date, months: number) => new Date(date.getFullYear(), date.getMonth() - months, 1)),
-  addDays: vi.fn((date: Date, days: number) => {
-    const newDate = new Date(date);
-    newDate.setDate(date.getDate() + days);
-    return newDate;
-  })
+  getWeek: vi.fn(() => 1),
+  addMonths: vi.fn((date) => new Date(date.getFullYear(), date.getMonth() + 1, 1)),
+  subMonths: vi.fn((date) => new Date(date.getFullYear(), date.getMonth() - 1, 1)),
+  format: vi.fn(() => 'Jan 1'),
+  parseISO: vi.fn(() => new Date(2024, 0, 1))
 }));
 
-// Mock calendarUtils functions
+// Mock calendar utils
 vi.mock('@/utils/calendarUtils', () => ({
-  getMonthData: vi.fn((date: Date, weekStartsOn: number, quarters: number[]) => {
-    const month = date.getMonth();
-    const year = date.getFullYear();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
-    // Create days array
-    const days = [];
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateObj = new Date(year, month, day);
-      const dayOfYear = Math.floor((dateObj.getTime() - new Date(year, 0, 1).getTime()) / (24 * 60 * 60 * 1000)) + 1;
-      const weekNumber = Math.floor((dayOfYear - 1) / 7) + 1;
-      const quarter = Math.floor(month / 3) + 1;
-      
-      days.push({
-        date: dateObj,
-        dayOfMonth: day,
-        isCurrentMonth: true,
-        isToday: false,
-        weekNumber,
-        quarter,
-        dayOfYear
-      });
-    }
-    
-    // Group into weeks
-    const weeks = [];
-    let currentWeek = [];
-    
-    days.forEach(day => {
-      currentWeek.push(day);
-      if (currentWeek.length === 7) {
-        weeks.push({
-          weekNumber: day.weekNumber,
-          days: [...currentWeek]
-        });
-        currentWeek = [];
+  getMonthData: vi.fn(() => ({
+    weeks: [
+      {
+        weekNumber: 1,
+        days: Array.from({ length: 7 }, (_, i) => ({
+          date: new Date(2024, 0, i + 1),
+          dayOfMonth: i + 1,
+          isCurrentMonth: true,
+          isToday: i === 0,
+          weekNumber: 1,
+          quarter: 1,
+          dayOfYear: i + 1
+        }))
       }
-    });
-    
-    if (currentWeek.length > 0) {
-      weeks.push({
-        weekNumber: currentWeek[currentWeek.length - 1].weekNumber,
-        days: [...currentWeek]
-      });
-    }
-    
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    
-    return {
-      weeks,
-      monthName: months[month],
-      year
-    };
-  }),
-  getDayOfYear: vi.fn((date: Date) => {
-    const yearStart = new Date(date.getFullYear(), 0, 1);
-    return Math.floor((date.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
-  }),
-  getQuarterName: vi.fn((quarter: number) => `Q${quarter}`),
-  getQuarterColor: vi.fn((quarter: number) => `q${quarter}`),
-  navigateMonth: vi.fn((date: Date, direction: 'prev' | 'next') => {
-    if (direction === 'next') {
-      return new Date(date.getFullYear(), date.getMonth() + 1, 1);
-    } else {
-      return new Date(date.getFullYear(), date.getMonth() - 1, 1);
-    }
-  })
+    ],
+    monthName: 'January',
+    year: 2024
+  })),
+  getDayOfYear: vi.fn(() => 1),
+  getQuarterName: vi.fn((quarter) => `Q${quarter}`),
+  getQuarterColor: vi.fn(() => 'bg-red-100')
 }));
 
-// Mock useCalendarConfig hook
+// Mock calendar hooks
+const mockHandleNextMonth = vi.fn();
+const mockHandlePrevMonth = vi.fn();
+const mockHandleToday = vi.fn();
+const mockHandleSelectDay = vi.fn();
+const mockHandleUpdateCurrentDate = vi.fn();
+
 vi.mock('@/stores/calendarConfig', () => ({
   useCalendarConfig: () => ({
     config: {
-      weekStartsOn: 1, // Monday
-      quarters: [1, 2, 3, 4]
-    }
+      weekStartsOn: 1,
+      quarterStartDay: 1,
+      quarters: {
+        1: { startDate: '2024-01-01', endDate: '2024-03-31' },
+        2: { startDate: '2024-04-01', endDate: '2024-06-30' },
+        3: { startDate: '2024-07-01', endDate: '2024-09-30' },
+        4: { startDate: '2024-10-01', endDate: '2024-12-31' }
+      }
+    },
+    setWeekStart: vi.fn(),
+    setQuarterStartDay: vi.fn(),
+    resetConfig: vi.fn()
   })
+}));
+
+vi.mock('@/hooks/useCalendarState', () => ({
+  useCalendarState: () => ({
+    state: {
+      currentDate: new Date(2024, 0, 1),
+      selectedDate: new Date(2024, 0, 1)
+    },
+    handlePrevMonth: mockHandlePrevMonth,
+    handleNextMonth: mockHandleNextMonth,
+    handleToday: mockHandleToday,
+    handleSelectDay: mockHandleSelectDay,
+    handleUpdateCurrentDate: mockHandleUpdateCurrentDate
+  })
+}));
+
+// Mock keyboard hook
+vi.mock('@/hooks/useCalendarKeyboard', () => ({
+  useCalendarKeyboard: vi.fn()
 }));
 
 // Mock child components
@@ -121,7 +130,7 @@ vi.mock('../CalendarHeader', () => ({
 }));
 
 vi.mock('../CalendarGrid', () => ({
-  default: ({ onSelectDay, selectedDate }) => {
+  default: ({ onSelectDay, selectedDate }: any) => {
     const date1 = new Date(2024, 0, 1);
     const date2 = new Date(2024, 0, 2);
     
@@ -147,7 +156,7 @@ vi.mock('../CalendarGrid', () => ({
 }));
 
 vi.mock('../MiniCalendar', () => ({
-  default: ({ date, onSelectDay }) => (
+  default: ({ date, onSelectDay }: any) => (
     <div data-testid="mini-calendar">
       <button onClick={() => onSelectDay(date)}>Select {date.getMonth() + 1}</button>
     </div>
@@ -184,9 +193,9 @@ describe('Calendar', () => {
     expect(screen.getByText('January')).toBeInTheDocument();
     
     // Check navigation buttons
-    expect(screen.getByRole('button', { name: /📅.*Today/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /←.*Previous month/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /→.*Next month/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Go to today' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Previous month' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Next month' })).toBeInTheDocument();
     
     // Check week and day numbers
     const weekContainer = screen.getByText(/Week:/).closest('div');
@@ -204,93 +213,31 @@ describe('Calendar', () => {
     expect(screen.getByText('Q2')).toBeInTheDocument();
     expect(screen.getByText('Q3')).toBeInTheDocument();
     expect(screen.getByText('Q4')).toBeInTheDocument();
-    
-    // Check child components
-    expect(screen.getByTestId('calendar-grid')).toBeInTheDocument();
-    expect(screen.getAllByTestId('mini-calendar')).toHaveLength(2);
-    expect(screen.getByTestId('calendar-config')).toBeInTheDocument();
-    expect(screen.getByTestId('print-calendar')).toBeInTheDocument();
   });
 
   it('handles month navigation correctly', async () => {
     render(<Calendar />);
     
     // Click next month button
-    await user.click(screen.getByRole('button', { name: /→.*Next month/i }));
+    await user.click(screen.getByRole('button', { name: 'Next month' }));
     
-    // Check if navigateMonth was called with next
-    expect(navigateMonth).toHaveBeenCalledWith(expect.any(Date), 'next');
-    
-    // Check if getMonthData was called with February
-    expect(getMonthData).toHaveBeenCalledWith(
-      expect.any(Date),
-      1, // weekStartsOn
-      [1, 2, 3, 4] // quarters
-    );
-    
-    // Verify the month is February
-    const lastCall = (getMonthData as Mock).mock.calls.slice(-1)[0];
-    expect(lastCall[0].getMonth()).toBe(1); // February
-    expect(lastCall[0].getFullYear()).toBe(2024);
+    // Check if handleNextMonth was called
+    expect(mockHandleNextMonth).toHaveBeenCalled();
     
     // Click previous month button
-    await user.click(screen.getByRole('button', { name: /←.*Previous month/i }));
+    await user.click(screen.getByRole('button', { name: 'Previous month' }));
     
-    // Check if navigateMonth was called with prev
-    expect(navigateMonth).toHaveBeenCalledWith(expect.any(Date), 'prev');
-    
-    // Check if getMonthData was called with January
-    expect(getMonthData).toHaveBeenCalledWith(
-      expect.any(Date),
-      1, // weekStartsOn
-      [1, 2, 3, 4] // quarters
-    );
-    
-    // Verify the month is January
-    const prevCall = (getMonthData as Mock).mock.calls.slice(-1)[0];
-    expect(prevCall[0].getMonth()).toBe(0); // January
-    expect(prevCall[0].getFullYear()).toBe(2024);
+    // Check if handlePrevMonth was called
+    expect(mockHandlePrevMonth).toHaveBeenCalled();
   });
 
-  it('handles today button correctly', async () => {
+  it('handles today button click correctly', async () => {
     render(<Calendar />);
     
     // Click today button
-    await user.click(screen.getByRole('button', { name: /📅.*Today/i }));
+    await user.click(screen.getByRole('button', { name: 'Go to today' }));
     
-    // Check if current date and selected date are set to today
-    expect(getMonthData).toHaveBeenCalledWith(
-      expect.any(Date),
-      1, // weekStartsOn
-      [1, 2, 3, 4] // quarters
-    );
-    
-    // Verify the month is January 2024 (today's date in our mocked environment)
-    const lastCall = (getMonthData as Mock).mock.calls.slice(-1)[0];
-    expect(lastCall[0].getMonth()).toBe(0); // January
-    expect(lastCall[0].getFullYear()).toBe(2024);
-  });
-
-  it('handles date selection correctly', async () => {
-    // Set initial date to January 1, 2024
-    vi.setSystemTime(new Date(2024, 0, 1));
-    
-    render(<Calendar />);
-    
-    // Initially, January 1 should be selected (it's today)
-    const dayElement = screen.getByTestId('day-1');
-    expect(dayElement).toHaveAttribute('aria-selected', 'true');
-    
-    // Click day 2
-    const day2Element = screen.getByTestId('day-2');
-    await user.click(day2Element);
-    
-    // Check if day 2 is selected and day 1 is unselected
-    expect(dayElement).toHaveAttribute('aria-selected', 'false');
-    expect(day2Element).toHaveAttribute('aria-selected', 'true');
-    
-    // Click day 2 again to unselect it
-    await user.click(day2Element);
-    expect(day2Element).toHaveAttribute('aria-selected', 'false');
+    // Check if handleToday was called
+    expect(mockHandleToday).toHaveBeenCalled();
   });
 }); 

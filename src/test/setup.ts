@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom';
-import { afterAll, afterEach, beforeAll, vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
-import { setupServer } from 'msw/node';
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -21,10 +20,4 @@ Object.defineProperty(window, 'matchMedia', {
 // Cleanup after each test
 afterEach(() => {
   cleanup();
-});
-
-// Setup MSW server
-const server = setupServer();
-
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
-afterAll(() => server.close()); 
+}); 
