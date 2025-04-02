@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import PrintCalendar from '../PrintCalendar';
 import { format, addMonths, startOfYear, getMonth } from 'date-fns';
+import { getMonthData, getQuarterColor, type CalendarDay, type CalendarWeek } from '@/utils/calendarUtils';
 
 // Mock window.open
 const mockOpen = vi.fn();
@@ -17,26 +18,46 @@ vi.mock('date-fns', () => ({
 
 // Mock calendarUtils functions
 vi.mock('@/utils/calendarUtils', () => ({
-  getMonthData: vi.fn((date: Date) => ({
-    weeks: [
-      {
-        weekNumber: 1,
-        days: [
-          { date: new Date(2024, 0, 1), dayOfMonth: 1, isCurrentMonth: true, dayOfYear: 1 },
-          { date: new Date(2024, 0, 2), dayOfMonth: 2, isCurrentMonth: true, dayOfYear: 2 }
-        ]
-      }
-    ],
-    monthName: 'January',
-    year: 2024
-  })),
-  getQuarterColor: vi.fn((quarter: number) => `bg-quarter-${quarter}`)
+  getMonthData: vi.fn(),
+  getQuarterColor: vi.fn()
 }));
 
 describe('PrintCalendar', () => {
+  const mockDay1: CalendarDay = {
+    date: new Date(2024, 0, 1),
+    dayOfMonth: 1,
+    isCurrentMonth: true,
+    isToday: false,
+    weekNumber: 1,
+    quarter: 1,
+    dayOfYear: 1
+  };
+
+  const mockDay2: CalendarDay = {
+    date: new Date(2024, 0, 2),
+    dayOfMonth: 2,
+    isCurrentMonth: true,
+    isToday: false,
+    weekNumber: 1,
+    quarter: 1,
+    dayOfYear: 2
+  };
+
+  const mockWeek: CalendarWeek = {
+    weekNumber: 1,
+    days: [mockDay1, mockDay2]
+  };
+
+  const mockMonthData = {
+    weeks: [mockWeek],
+    monthName: 'January',
+    year: 2024
+  };
+
   beforeEach(() => {
-    // Reset all mocks before each test
     vi.clearAllMocks();
+    mockOpen.mockReset();
+    vi.mocked(getMonthData).mockReturnValue(mockMonthData);
     
     // Mock window.open and alert
     window.open = mockOpen;
@@ -99,5 +120,71 @@ describe('PrintCalendar', () => {
     expect(writtenContent).toContain('January');
     expect(writtenContent).toContain('Week Range: 1 - 1');
     expect(writtenContent).toContain('Day Range: 1-2');
+  });
+
+  it('applies correct quarter colors and transitions', () => {
+    // Mock window object for print window
+    const mockPrintWindow = {
+      document: {
+        write: vi.fn(),
+        close: vi.fn()
+      },
+      print: vi.fn(),
+      close: vi.fn()
+    };
+    
+    // Mock window.open to return our mock window
+    mockOpen.mockReturnValue(mockPrintWindow);
+    
+    // Mock getMonthData to return different months
+    const getMonthDataMock = vi.fn((date: Date) => {
+      const month = date.getMonth();
+      const quarter = Math.floor(month / 3) + 1;
+      const day: CalendarDay = {
+        date: new Date(2024, month, 1),
+        dayOfMonth: 1,
+        isCurrentMonth: true,
+        isToday: false,
+        weekNumber: 1,
+        quarter,
+        dayOfYear: 1
+      };
+      const week: CalendarWeek = {
+        weekNumber: 1,
+        days: [day]
+      };
+      return {
+        weeks: [week],
+        monthName: ['January', 'February', 'March', 'April', 'May', 'June', 
+                    'July', 'August', 'September', 'October', 'November', 'December'][month],
+        year: 2024
+      };
+    });
+    
+    // Update the mock implementation
+    vi.mocked(getMonthData).mockImplementation(getMonthDataMock);
+    
+    render(<PrintCalendar currentDate={new Date(2024, 0, 1)} />);
+    
+    // Click print button
+    fireEvent.click(screen.getByRole('button'));
+    
+    // Get the written content
+    const writtenContent = mockPrintWindow.document.write.mock.calls[0][0];
+    
+    // Check quarter classes for each month
+    expect(writtenContent).toContain('class="month-container q1"'); // January
+    expect(writtenContent).toContain('class="month-container q2"'); // April
+    expect(writtenContent).toContain('class="month-container q3"'); // July
+    expect(writtenContent).toContain('class="month-container q4"'); // October
+    
+    // Check quarter transitions
+    expect(writtenContent).toContain('class="month-container q1"'); // March
+    expect(writtenContent).toContain('class="month-container q2"'); // April
+    expect(writtenContent).toContain('class="month-container q2"'); // June
+    expect(writtenContent).toContain('class="month-container q3"'); // July
+    expect(writtenContent).toContain('class="month-container q3"'); // September
+    expect(writtenContent).toContain('class="month-container q4"'); // October
+    expect(writtenContent).toContain('class="month-container q4"'); // December
   });
 }); 
