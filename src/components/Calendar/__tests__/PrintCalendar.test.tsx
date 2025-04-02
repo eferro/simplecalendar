@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import PrintCalendar from '../PrintCalendar';
 import { format, addMonths, startOfYear, getMonth } from 'date-fns';
+import { getMonthData, getQuarterColor, type CalendarDay, type CalendarWeek } from '@/utils/calendarUtils';
 
 // Mock window.open
 const mockOpen = vi.fn();
@@ -99,5 +100,82 @@ describe('PrintCalendar', () => {
     expect(writtenContent).toContain('January');
     expect(writtenContent).toContain('Week Range: 1 - 1');
     expect(writtenContent).toContain('Day Range: 1-2');
+  });
+
+  it('handles leap year February correctly', () => {
+    // Mock window object for print window
+    const mockPrintWindow = {
+      document: {
+        write: vi.fn(),
+        close: vi.fn()
+      },
+      print: vi.fn(),
+      close: vi.fn()
+    };
+    
+    // Mock window.open to return our mock window
+    mockOpen.mockReturnValue(mockPrintWindow);
+    
+    // Mock getMonthData to return February with 29 days
+    const getMonthDataMock = vi.fn((date: Date) => {
+      const month = date.getMonth();
+      const quarter = Math.floor(month / 3) + 1;
+      
+      // For February, create days 1-29
+      const days: CalendarDay[] = [];
+      for (let day = 1; day <= (month === 1 ? 29 : 1); day++) {
+        days.push({
+          date: new Date(2024, month, day),
+          dayOfMonth: day,
+          isCurrentMonth: true,
+          isToday: false,
+          weekNumber: Math.floor((day - 1) / 7) + 1,
+          quarter,
+          dayOfYear: month === 1 ? 31 + day : day // Account for January's days
+        });
+      }
+      
+      const weeks: CalendarWeek[] = [];
+      for (let week = 1; week <= Math.ceil(days.length / 7); week++) {
+        weeks.push({
+          weekNumber: week,
+          days: days.slice((week - 1) * 7, week * 7).filter(d => d) // Filter out undefined days
+        });
+      }
+      
+      return {
+        weeks,
+        monthName: month === 1 ? 'February' : 'January',
+        year: 2024
+      };
+    });
+    
+    // Update the mock implementation
+    vi.mocked(getMonthData).mockImplementation(getMonthDataMock);
+    
+    render(<PrintCalendar currentDate={new Date(2024, 1, 1)} />);
+    
+    // Click print button
+    fireEvent.click(screen.getByRole('button'));
+    
+    // Get the written content
+    const writtenContent = mockPrintWindow.document.write.mock.calls[0][0];
+    
+    // Check February's content
+    expect(writtenContent).toContain('February');
+    expect(writtenContent).toContain('Day Range: 32-60'); // February 1st is day 32 (31 days in January + 1)
+    expect(writtenContent).toContain('Week Range: 1 - 5'); // February 2024 spans 5 weeks
+    
+    // Check that all days are present
+    for (let day = 1; day <= 29; day++) {
+      expect(writtenContent).toContain(`>${day}<`);
+    }
+    
+    // Check quarter class is applied correctly
+    expect(writtenContent).toContain('class="month-container q1"'); // February is in Q1
+    
+    // Verify week numbers are correct
+    expect(writtenContent).toContain('<td class="week-number">\n            1');
+    expect(writtenContent).toContain('<td class="week-number">\n            5');
   });
 }); 
