@@ -58,13 +58,13 @@ const Calendar: React.FC = () => {
       {/* Header section */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
         {/* Left section: Month/Year */}
-        <div className="flex flex-col items-center md:items-start">
+        <div className="flex flex-col items-center md:items-start w-[200px]">
           <h3 className="text-lg font-medium text-muted-foreground">{year}</h3>
-          <h2 className="text-3xl font-bold tracking-tight">{monthName}</h2>
+          <h2 className="text-3xl font-bold tracking-tight w-full">{monthName}</h2>
         </div>
         
         {/* Center section: Navigation controls */}
-        <div className="flex items-center space-x-4">
+        <div className="flex-1 flex justify-center items-center space-x-4">
           <Button
             variant="outline"
             size="sm"
@@ -105,7 +105,7 @@ const Calendar: React.FC = () => {
         </div>
 
         {/* Right section: Print button and Settings */}
-        <div className="hidden md:flex items-center space-x-2">
+        <div className="hidden md:flex items-center space-x-2 w-[200px] justify-end">
           <CalendarConfig />
           <PrintCalendar currentDate={currentDate} />
         </div>
