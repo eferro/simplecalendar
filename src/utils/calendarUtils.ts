@@ -1,5 +1,4 @@
-import { addDays, addMonths, endOfMonth, endOfWeek, format, getDay, getMonth, getWeek, getYear, isSameDay, isSameMonth, startOfMonth, startOfWeek, subMonths, isWithinInterval, parseISO, eachDayOfInterval } from 'date-fns';
-import { useCalendarConfig } from '@/stores/calendarConfig';
+import { addMonths, endOfMonth, endOfWeek, format, getMonth, getWeek, getYear, isSameDay, isSameMonth, startOfMonth, startOfWeek, subMonths, isWithinInterval, parseISO, eachDayOfInterval } from 'date-fns';
 import type { QuarterConfig } from '@/stores/calendarConfig';
 
 export type CalendarDay = {
