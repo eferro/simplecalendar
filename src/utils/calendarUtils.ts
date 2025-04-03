@@ -1,4 +1,4 @@
-import { addDays, addMonths, endOfMonth, endOfWeek, format, getDay, getMonth, getWeek, getYear, isSameDay, isSameMonth, startOfMonth, startOfWeek, subMonths, isWithinInterval, parseISO } from 'date-fns';
+import { addDays, addMonths, endOfMonth, endOfWeek, format, getDay, getMonth, getWeek, getYear, isSameDay, isSameMonth, startOfMonth, startOfWeek, subMonths, isWithinInterval, parseISO, eachDayOfInterval } from 'date-fns';
 import { useCalendarConfig } from '@/stores/calendarConfig';
 import type { QuarterConfig } from '@/stores/calendarConfig';
 
@@ -19,10 +19,25 @@ export type CalendarWeek = {
 
 // Calculate day of year (1-365/366)
 export const getDayOfYear = (date: Date): number => {
-  const start = new Date(date.getFullYear(), 0, 0);
-  const diff = (date.getTime() - start.getTime()) + ((start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000);
-  const oneDay = 1000 * 60 * 60 * 24;
-  return Math.floor(diff / oneDay);
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+  
+  // Array of days in each month (non-leap year)
+  const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  
+  // Adjust February for leap years
+  if (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) {
+    daysInMonth[1] = 29;
+  }
+  
+  // Calculate days up to the current month
+  let dayOfYear = day;
+  for (let i = 0; i < month; i++) {
+    dayOfYear += daysInMonth[i];
+  }
+  
+  return dayOfYear;
 };
 
 // Get quarter for a given date based on configuration
@@ -60,49 +75,46 @@ export const getQuarterForDate = (date: Date, quarterConfig: Record<number, Quar
 };
 
 export const getDaysInMonth = (date: Date, weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1, quarterConfig?: Record<number, QuarterConfig>) => {
-  const startDate = startOfMonth(date);
-  const endDate = endOfMonth(date);
-  const startWeek = startOfWeek(startDate, { weekStartsOn });
-  const endWeek = endOfWeek(endDate, { weekStartsOn });
+  // Set time to noon to avoid timezone issues
+  const normalizeDate = (d: Date) => {
+    const normalized = new Date(d);
+    normalized.setHours(12, 0, 0, 0);
+    return normalized;
+  };
+
+  const targetDate = normalizeDate(date);
+  const monthStart = startOfMonth(targetDate);
+  const monthEnd = endOfMonth(targetDate);
   
-  const today = new Date();
+  // Get the first day of the first week
+  const firstDay = startOfWeek(monthStart, { weekStartsOn });
+  // Get the last day of the last week
+  const lastDay = endOfWeek(monthEnd, { weekStartsOn });
+  
+  const today = normalizeDate(new Date());
   const weeksInMonth: CalendarWeek[] = [];
   
-  let currentDay = startWeek;
+  // Get all days in the interval
+  const allDays = eachDayOfInterval({ start: firstDay, end: lastDay }).map(d => normalizeDate(d));
   
-  while (currentDay <= endWeek) {
-    const week: CalendarDay[] = [];
-    const weekNumber = getWeek(currentDay, { weekStartsOn });
+  // Group days into weeks of 7 days
+  for (let i = 0; i < allDays.length; i += 7) {
+    const weekDays = allDays.slice(i, i + 7);
+    const weekNumber = getWeek(weekDays[0], { weekStartsOn });
     
-    let weekObj: CalendarWeek = {
+    const week: CalendarDay[] = weekDays.map(currentDate => ({
+      date: currentDate,
+      dayOfMonth: currentDate.getDate(),
+      isCurrentMonth: isSameMonth(currentDate, targetDate),
+      isToday: isSameDay(currentDate, today),
       weekNumber,
-      days: []
-    };
+      quarter: quarterConfig 
+        ? getQuarterForDate(currentDate, quarterConfig)
+        : Math.ceil((getMonth(currentDate) + 1) / 3),
+      dayOfYear: getDayOfYear(currentDate)
+    }));
     
-    // Create 7 days for this week
-    for (let i = 0; i < 7; i++) {
-      const dayOfMonth = currentDay.getDate();
-      const quarter = quarterConfig 
-        ? getQuarterForDate(currentDay, quarterConfig)
-        : Math.ceil((getMonth(currentDay) + 1) / 3);
-      const dayOfYear = getDayOfYear(currentDay);
-      
-      const day: CalendarDay = {
-        date: new Date(currentDay),
-        dayOfMonth,
-        isCurrentMonth: isSameMonth(currentDay, date),
-        isToday: isSameDay(currentDay, today),
-        weekNumber,
-        quarter,
-        dayOfYear
-      };
-      
-      week.push(day);
-      currentDay = addDays(currentDay, 1);
-    }
-    
-    weekObj.days = week;
-    weeksInMonth.push(weekObj);
+    weeksInMonth.push({ weekNumber, days: week });
   }
   
   return weeksInMonth;
