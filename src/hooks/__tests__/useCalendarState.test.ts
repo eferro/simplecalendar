@@ -163,4 +163,73 @@ describe('useCalendarState', () => {
     
     expect(result.current.state.currentDate).toEqual(new Date(2024, 11, 15));
   });
+
+  it('should navigate between quarters correctly', () => {
+    const { result } = renderHook(() => useCalendarState());
+    
+    // Start in Q1 (January)
+    act(() => {
+      result.current.handleUpdateCurrentDate(new Date(2024, 0, 15));
+    });
+    
+    // Navigate to Q2 (April)
+    act(() => {
+      result.current.handleUpdateCurrentDate(new Date(2024, 3, 15));
+    });
+    expect(result.current.state.currentDate).toEqual(new Date(2024, 3, 15));
+    
+    // Navigate to Q3 (July)
+    act(() => {
+      result.current.handleUpdateCurrentDate(new Date(2024, 6, 15));
+    });
+    expect(result.current.state.currentDate).toEqual(new Date(2024, 6, 15));
+    
+    // Navigate to Q4 (October)
+    act(() => {
+      result.current.handleUpdateCurrentDate(new Date(2024, 9, 15));
+    });
+    expect(result.current.state.currentDate).toEqual(new Date(2024, 9, 15));
+  });
+
+  it('should handle quarter transitions with selected date', () => {
+    const { result } = renderHook(() => useCalendarState());
+    
+    // Start in Q1 and select a date
+    act(() => {
+      result.current.handleUpdateCurrentDate(new Date(2024, 0, 15));
+      result.current.handleSelectDay(new Date(2024, 0, 20));
+    });
+    
+    // Navigate to Q2
+    act(() => {
+      result.current.handleUpdateCurrentDate(new Date(2024, 3, 15));
+    });
+    
+    // Selected date should remain unchanged
+    expect(result.current.state.selectedDate).toEqual(new Date(2024, 0, 20));
+    expect(result.current.state.currentDate).toEqual(new Date(2024, 3, 15));
+  });
+
+  it('should handle year transitions during quarter navigation', () => {
+    const { result } = renderHook(() => useCalendarState());
+    
+    // Start in Q4 2024
+    act(() => {
+      result.current.handleUpdateCurrentDate(new Date(2024, 9, 15));
+    });
+    
+    // Navigate to Q1 2025
+    act(() => {
+      result.current.handleUpdateCurrentDate(new Date(2025, 0, 15));
+    });
+    
+    expect(result.current.state.currentDate).toEqual(new Date(2025, 0, 15));
+    
+    // Navigate back to Q4 2024
+    act(() => {
+      result.current.handleUpdateCurrentDate(new Date(2024, 9, 15));
+    });
+    
+    expect(result.current.state.currentDate).toEqual(new Date(2024, 9, 15));
+  });
 }); 

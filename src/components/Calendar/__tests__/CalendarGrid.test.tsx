@@ -202,7 +202,6 @@ describe('CalendarGrid', () => {
       />
     );
 
-    // Check if week number has gradient class for multiple quarters
     const weekNumber = screen.getByText('13', { selector: '.week-number' });
     expect(weekNumber.className).toContain('bg-gradient-to-r');
     expect(weekNumber.className).toContain('from-quarter-q1/40');
@@ -417,5 +416,44 @@ describe('CalendarGrid', () => {
 
     // Reset system time
     vi.useRealTimers();
+  });
+
+  it('handles year transition in quarter colors', () => {
+    const yearTransitionWeek = [{
+      weekNumber: 1,
+      days: [
+        {
+          date: new Date('2024-12-31'),
+          dayOfMonth: 31,
+          isCurrentMonth: true,
+          isToday: false,
+          weekNumber: 1,
+          quarter: 4,
+          dayOfYear: 366
+        },
+        {
+          date: new Date('2025-01-01'),
+          dayOfMonth: 1,
+          isCurrentMonth: false,
+          isToday: false,
+          weekNumber: 1,
+          quarter: 1,
+          dayOfYear: 1
+        }
+      ]
+    }];
+
+    render(
+      <CalendarGrid
+        weeks={yearTransitionWeek}
+        selectedDate={null}
+        onSelectDay={() => {}}
+      />
+    );
+
+    const weekNumber = screen.getByText('1', { selector: '.week-number' });
+    expect(weekNumber.className).toContain('bg-gradient-to-r');
+    expect(weekNumber.className).toContain('from-quarter-q1/40');
+    expect(weekNumber.className).toContain('to-quarter-q4/40');
   });
 }); 

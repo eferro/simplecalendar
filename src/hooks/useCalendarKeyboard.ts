@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { addDays } from 'date-fns';
+import { addDays, addMonths } from 'date-fns';
 import { CalendarState } from '@/types/calendar';
 
 interface UseCalendarKeyboardProps {
@@ -31,25 +31,42 @@ export const useCalendarKeyboard = ({
 
       let newDate = new Date(selectedDate);
       
-      switch (e.key) {
-        case 'ArrowUp':
-          // Move up one week (subtract 7 days)
-          newDate = addDays(selectedDate, -7);
-          break;
-        case 'ArrowDown':
-          // Move down one week (add 7 days)
-          newDate = addDays(selectedDate, 7);
-          break;
-        case 'ArrowLeft':
-          // Move left one day
-          newDate = addDays(selectedDate, -1);
-          break;
-        case 'ArrowRight':
-          // Move right one day
-          newDate = addDays(selectedDate, 1);
-          break;
-        default:
-          return;
+      if (e.shiftKey) {
+        // Quarter navigation with Shift key
+        switch (e.key) {
+          case 'ArrowRight':
+            // Move forward one quarter (3 months)
+            newDate = addMonths(selectedDate, 3);
+            break;
+          case 'ArrowLeft':
+            // Move back one quarter (3 months)
+            newDate = addMonths(selectedDate, -3);
+            break;
+          default:
+            return;
+        }
+      } else {
+        // Regular navigation without Shift key
+        switch (e.key) {
+          case 'ArrowUp':
+            // Move up one week (subtract 7 days)
+            newDate = addDays(selectedDate, -7);
+            break;
+          case 'ArrowDown':
+            // Move down one week (add 7 days)
+            newDate = addDays(selectedDate, 7);
+            break;
+          case 'ArrowLeft':
+            // Move left one day
+            newDate = addDays(selectedDate, -1);
+            break;
+          case 'ArrowRight':
+            // Move right one day
+            newDate = addDays(selectedDate, 1);
+            break;
+          default:
+            return;
+        }
       }
       
       // Update selected date

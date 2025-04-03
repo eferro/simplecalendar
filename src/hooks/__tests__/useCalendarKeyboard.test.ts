@@ -161,4 +161,94 @@ describe('useCalendarKeyboard', () => {
     // Check if event listener was removed
     expect(removeEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));
   });
+
+  it('should navigate between quarters with arrow keys', () => {
+    // Create dates at midnight to avoid timezone issues
+    const createDate = (year: number, month: number, day: number) => {
+      const date = new Date(year, month, day);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    };
+
+    let selectedDate = createDate(2024, 0, 15); // Q1
+    
+    const { rerender } = renderHook(() => useCalendarKeyboard({
+      selectedDate,
+      currentDate: selectedDate,
+      onSelectDate: mockOnSelectDate,
+      onUpdateCurrentDate: mockOnUpdateCurrentDate,
+    }));
+
+    // Navigate to Q2 (April)
+    fireEvent.keyDown(document, { key: 'ArrowRight', shiftKey: true });
+    const q2Date = createDate(2024, 3, 15); // April 15 (Q2)
+    expect(mockOnSelectDate).toHaveBeenCalledWith(q2Date);
+    expect(mockOnUpdateCurrentDate).toHaveBeenCalledWith(q2Date);
+
+    // Update selected date and rerender hook
+    selectedDate = q2Date;
+    rerender();
+    vi.clearAllMocks();
+
+    // Navigate to Q3 (July)
+    fireEvent.keyDown(document, { key: 'ArrowRight', shiftKey: true });
+    const q3Date = createDate(2024, 6, 15); // July 15 (Q3)
+    expect(mockOnSelectDate).toHaveBeenCalledWith(q3Date);
+    expect(mockOnUpdateCurrentDate).toHaveBeenCalledWith(q3Date);
+
+    // Update selected date and rerender hook
+    selectedDate = q3Date;
+    rerender();
+    vi.clearAllMocks();
+
+    // Navigate to Q4 (October)
+    fireEvent.keyDown(document, { key: 'ArrowRight', shiftKey: true });
+    const q4Date = createDate(2024, 9, 15); // October 15 (Q4)
+    expect(mockOnSelectDate).toHaveBeenCalledWith(q4Date);
+    expect(mockOnUpdateCurrentDate).toHaveBeenCalledWith(q4Date);
+  });
+
+  it('should handle quarter transitions with keyboard', () => {
+    const createDate = (year: number, month: number, day: number) => {
+      const date = new Date(year, month, day);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    };
+
+    const selectedDate = createDate(2024, 2, 31); // March 31 (Q1)
+    
+    renderHook(() => useCalendarKeyboard({
+      selectedDate,
+      currentDate: selectedDate,
+      onSelectDate: mockOnSelectDate,
+      onUpdateCurrentDate: mockOnUpdateCurrentDate,
+    }));
+
+    // Navigate to Q2
+    fireEvent.keyDown(document, { key: 'ArrowRight', shiftKey: true });
+    expect(mockOnSelectDate).toHaveBeenCalledWith(createDate(2024, 5, 30)); // June 30 (Q2)
+    expect(mockOnUpdateCurrentDate).toHaveBeenCalledWith(createDate(2024, 5, 30));
+  });
+
+  it('should handle year transitions with keyboard', () => {
+    const createDate = (year: number, month: number, day: number) => {
+      const date = new Date(year, month, day);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    };
+
+    const selectedDate = createDate(2024, 11, 31); // December 31 (Q4)
+    
+    renderHook(() => useCalendarKeyboard({
+      selectedDate,
+      currentDate: selectedDate,
+      onSelectDate: mockOnSelectDate,
+      onUpdateCurrentDate: mockOnUpdateCurrentDate,
+    }));
+
+    // Navigate to Q1 of next year
+    fireEvent.keyDown(document, { key: 'ArrowRight', shiftKey: true });
+    expect(mockOnSelectDate).toHaveBeenCalledWith(createDate(2025, 2, 31)); // March 31 (Q1)
+    expect(mockOnUpdateCurrentDate).toHaveBeenCalledWith(createDate(2025, 2, 31));
+  });
 }); 
