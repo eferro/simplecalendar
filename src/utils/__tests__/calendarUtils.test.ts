@@ -70,9 +70,46 @@ describe('calendarUtils', () => {
       expect(getQuarterForDate(new Date(2024, 6, 15), emptyConfig)).toBe(3);
       expect(getQuarterForDate(new Date(2024, 9, 15), emptyConfig)).toBe(4);
     });
+
+    it('handles exact quarter boundaries', () => {
+      const mockQuarterConfig: Record<number, QuarterConfig> = {
+        1: { startDate: '2024-01-01', endDate: '2024-03-31', color: 'bg-quarter-q1' },
+        2: { startDate: '2024-04-01', endDate: '2024-06-30', color: 'bg-quarter-q2' }
+      };
+
+      // Test exact start of Q1
+      expect(getQuarterForDate(new Date(2024, 0, 1), mockQuarterConfig)).toBe(1);
+      // Test exact end of Q1
+      expect(getQuarterForDate(new Date(2024, 2, 31, 23, 59, 59), mockQuarterConfig)).toBe(1);
+      // Test exact start of Q2
+      expect(getQuarterForDate(new Date(2024, 3, 1, 0, 0, 0), mockQuarterConfig)).toBe(2);
+    });
+
+    it('handles timezone edge cases in quarter transitions', () => {
+      const mockQuarterConfig: Record<number, QuarterConfig> = {
+        1: { startDate: '2024-01-01', endDate: '2024-03-31', color: 'bg-quarter-q1' },
+        2: { startDate: '2024-04-01', endDate: '2024-06-30', color: 'bg-quarter-q2' }
+      };
+
+      // Create dates at various times on the transition day
+      const endOfQ1 = new Date(2024, 2, 31, 23, 59, 59);
+      const startOfQ2 = new Date(2024, 3, 1, 0, 0, 0);
+      const noonQ2 = new Date(2024, 3, 1, 12, 0, 0);
+
+      expect(getQuarterForDate(endOfQ1, mockQuarterConfig)).toBe(1);
+      expect(getQuarterForDate(startOfQ2, mockQuarterConfig)).toBe(2);
+      expect(getQuarterForDate(noonQ2, mockQuarterConfig)).toBe(2);
+    });
   });
 
   describe('getDaysInMonth', () => {
+    const mockQuarterConfig: Record<number, QuarterConfig> = {
+      1: { startDate: '2024-01-01', endDate: '2024-03-31', color: 'bg-quarter-q1' },
+      2: { startDate: '2024-04-01', endDate: '2024-06-30', color: 'bg-quarter-q2' },
+      3: { startDate: '2024-07-01', endDate: '2024-09-30', color: 'bg-quarter-q3' },
+      4: { startDate: '2024-10-01', endDate: '2024-12-31', color: 'bg-quarter-q4' }
+    };
+
     it('returns correct number of weeks for a month', () => {
       const weeks = getDaysInMonth(new Date(2024, 0, 1));
       expect(weeks.length).toBe(5); // January 2024 has 5 weeks
@@ -129,9 +166,45 @@ describe('calendarUtils', () => {
       expect(mondayFirst[0].days[0].date.getDay()).toBe(1); // Monday
       expect(sundayFirst[0].days[0].date.getDay()).toBe(0); // Sunday
     });
+
+    it('handles quarter configuration correctly', () => {
+      const date = new Date(2024, 2, 31); // March 31 (Q1)
+      const weeks = getDaysInMonth(date, 1, mockQuarterConfig);
+      
+      // Check quarter assignment for days across quarters
+      const lastWeek = weeks[weeks.length - 1].days;
+      
+      // March 31 should be Q1
+      expect(lastWeek[6].quarter).toBe(1);
+      
+      // If April 1 is included, it should be Q2
+      if (lastWeek.length > 7) {
+        const nextMonthDay = lastWeek[7];
+        expect(nextMonthDay.quarter).toBe(2);
+      }
+    });
+
+    it('handles timezone edge cases', () => {
+      // Create a date at 23:59:59
+      const lateNightDate = new Date(2024, 2, 31, 23, 59, 59);
+      const weeks = getDaysInMonth(lateNightDate, 1);
+      
+      // Should still be treated as March 31
+      const lastWeek = weeks[weeks.length - 1].days;
+      const lastDay = lastWeek[lastWeek.length - 1];
+      expect(lastDay.date.getMonth()).toBe(2); // March
+      expect(lastDay.date.getDate()).toBe(31);
+    });
   });
 
   describe('getMonthData', () => {
+    const mockQuarterConfig: Record<number, QuarterConfig> = {
+      1: { startDate: '2024-01-01', endDate: '2024-03-31', color: 'bg-quarter-q1' },
+      2: { startDate: '2024-04-01', endDate: '2024-06-30', color: 'bg-quarter-q2' },
+      3: { startDate: '2024-07-01', endDate: '2024-09-30', color: 'bg-quarter-q3' },
+      4: { startDate: '2024-10-01', endDate: '2024-12-31', color: 'bg-quarter-q4' }
+    };
+
     it('returns correct month name and year', () => {
       const data = getMonthData(new Date(2024, 0, 1));
       expect(data.monthName).toBe('January');
@@ -142,6 +215,47 @@ describe('calendarUtils', () => {
       const data = getMonthData(new Date(2024, 0, 1));
       expect(data.weeks).toBeDefined();
       expect(Array.isArray(data.weeks)).toBe(true);
+    });
+
+    it('includes quarter information when quarterConfig is provided', () => {
+      const data = getMonthData(new Date(2024, 2, 15), 1, mockQuarterConfig); // March 15, 2024
+      
+      // Check that all days in March are Q1
+      data.weeks.forEach(week => {
+        week.days.forEach(day => {
+          if (day.isCurrentMonth) {
+            expect(day.quarter).toBe(1);
+          }
+        });
+      });
+
+      // Check that any April days (if present) are Q2
+      const lastWeek = data.weeks[data.weeks.length - 1];
+      const aprilDays = lastWeek.days.filter(day => 
+        day.date.getMonth() === 3 && !day.isCurrentMonth
+      );
+      
+      aprilDays.forEach(day => {
+        expect(day.quarter).toBe(2);
+      });
+    });
+
+    it('handles quarter transitions at year boundaries', () => {
+      // Test December 2024 to January 2025 transition
+      const decData = getMonthData(new Date(2024, 11, 15), 1, mockQuarterConfig);
+      const lastWeek = decData.weeks[decData.weeks.length - 1];
+      
+      // December days should be Q4 2024
+      const decDays = lastWeek.days.filter(day => day.date.getMonth() === 11);
+      decDays.forEach(day => {
+        expect(day.quarter).toBe(4);
+      });
+      
+      // January days (if present) should be Q1 2025
+      const janDays = lastWeek.days.filter(day => day.date.getMonth() === 0);
+      janDays.forEach(day => {
+        expect(day.quarter).toBe(1);
+      });
     });
   });
 
