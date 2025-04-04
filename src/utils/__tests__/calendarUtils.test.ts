@@ -54,13 +54,14 @@ describe('calendarUtils', () => {
     });
 
     it('handles year transition for Q4', () => {
-      const q4Config: Record<number, QuarterConfig> = {
-        4: { startDate: '2024-10-01', endDate: '2024-12-31', color: 'bg-quarter-q4' }
+      const quarterConfig: Record<number, QuarterConfig> = {
+        1: { startDate: '2025-01-15', endDate: '2025-04-14', color: 'bg-quarter-q1' },
+        4: { startDate: '2024-10-15', endDate: '2025-01-14', color: 'bg-quarter-q4' }
       };
-      // December 31st, 2024
-      expect(getQuarterForDate(new Date(2024, 11, 31), q4Config)).toBe(4);
-      // January 1st, 2025
-      expect(getQuarterForDate(new Date(2025, 0, 1), q4Config)).toBe(4);
+      // January 14th, 2025 (last day of Q4)
+      expect(getQuarterForDate(new Date(2025, 0, 14), quarterConfig)).toBe(4);
+      // January 15th, 2025 (first day of Q1)
+      expect(getQuarterForDate(new Date(2025, 0, 15), quarterConfig)).toBe(1);
     });
 
     it('falls back to month-based quarter when no config matches', () => {
@@ -99,6 +100,31 @@ describe('calendarUtils', () => {
       expect(getQuarterForDate(endOfQ1, mockQuarterConfig)).toBe(1);
       expect(getQuarterForDate(startOfQ2, mockQuarterConfig)).toBe(2);
       expect(getQuarterForDate(noonQ2, mockQuarterConfig)).toBe(2);
+    });
+
+    it('handles quarters starting on the 15th correctly', () => {
+      const quarterConfig: Record<number, QuarterConfig> = {
+        1: { startDate: '2025-01-15', endDate: '2025-04-14', color: 'bg-quarter-q1' },
+        2: { startDate: '2025-04-15', endDate: '2025-07-14', color: 'bg-quarter-q2' },
+        3: { startDate: '2025-07-15', endDate: '2025-10-14', color: 'bg-quarter-q3' },
+        4: { startDate: '2025-10-15', endDate: '2026-01-14', color: 'bg-quarter-q4' }
+      };
+
+      // Test Q1 last day and Q2 first day
+      expect(getQuarterForDate(new Date(2025, 3, 14), quarterConfig)).toBe(1); // April 14 should be Q1
+      expect(getQuarterForDate(new Date(2025, 3, 15), quarterConfig)).toBe(2); // April 15 should be Q2
+
+      // Test Q2 last day and Q3 first day
+      expect(getQuarterForDate(new Date(2025, 6, 14), quarterConfig)).toBe(2); // July 14 should be Q2
+      expect(getQuarterForDate(new Date(2025, 6, 15), quarterConfig)).toBe(3); // July 15 should be Q3
+
+      // Test Q3 last day and Q4 first day
+      expect(getQuarterForDate(new Date(2025, 9, 14), quarterConfig)).toBe(3); // October 14 should be Q3
+      expect(getQuarterForDate(new Date(2025, 9, 15), quarterConfig)).toBe(4); // October 15 should be Q4
+
+      // Test Q4 last day and Q1 first day (year transition)
+      expect(getQuarterForDate(new Date(2026, 0, 14), quarterConfig)).toBe(4); // January 14 should be Q4
+      expect(getQuarterForDate(new Date(2026, 0, 15), quarterConfig)).toBe(1); // January 15 should be Q1
     });
   });
 

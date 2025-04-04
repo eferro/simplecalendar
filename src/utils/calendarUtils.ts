@@ -41,35 +41,58 @@ export const getDayOfYear = (date: Date): number => {
 
 // Get quarter for a given date based on configuration
 export const getQuarterForDate = (date: Date, quarterConfig: Record<number, QuarterConfig>) => {
-  // Adjust the year of quarter dates if needed
-  const adjustQuarterDates = (isoString: string) => {
-    const quarterDate = parseISO(isoString);
-    const year = date.getFullYear();
-    return new Date(year, quarterDate.getMonth(), quarterDate.getDate());
+  // If no config provided or empty config, fall back to month-based calculation
+  if (!quarterConfig || Object.keys(quarterConfig).length === 0) {
+    return Math.ceil((date.getMonth() + 1) / 3);
+  }
+
+  // Helper to create a date with the same time as the input date
+  const createDate = (year: number, month: number, day: number) => {
+    return new Date(year, month, day, date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
   };
 
-  for (const [quarter, config] of Object.entries(quarterConfig)) {
-    const startDate = adjustQuarterDates(config.startDate);
-    const endDate = adjustQuarterDates(config.endDate);
+  // First check if we're in Q4 of the previous year
+  if (quarterConfig[4]) {
+    const q4Config = quarterConfig[4];
+    const q4Start = parseISO(q4Config.startDate);
+    const q4End = parseISO(q4Config.endDate);
     
-    // Handle year transition for Q4
-    if (Number(quarter) === 4 && date.getMonth() === 0) {
-      const prevYearStart = new Date(startDate);
-      prevYearStart.setFullYear(date.getFullYear() - 1);
-      const prevYearEnd = new Date(endDate);
-      prevYearEnd.setFullYear(date.getFullYear());
+    // If Q4 ends in the next year
+    if (q4End.getMonth() < q4Start.getMonth()) {
+      const prevYearStart = createDate(date.getFullYear() - 1, q4Start.getMonth(), q4Start.getDate());
+      const currentYearEnd = createDate(date.getFullYear(), q4End.getMonth(), q4End.getDate());
       
-      if (isWithinInterval(date, { start: prevYearStart, end: prevYearEnd })) {
+      if (isWithinInterval(date, { start: prevYearStart, end: currentYearEnd })) {
         return 4;
       }
     }
+  }
+
+  // Then check all quarters in the current year
+  for (const [quarter, config] of Object.entries(quarterConfig)) {
+    const startDate = parseISO(config.startDate);
+    const endDate = parseISO(config.endDate);
     
-    if (isWithinInterval(date, { start: startDate, end: endDate })) {
-      return Number(quarter);
+    // If the quarter is contained within the same year
+    if (endDate.getMonth() >= startDate.getMonth()) {
+      const currentYearStart = createDate(date.getFullYear(), startDate.getMonth(), startDate.getDate());
+      const currentYearEnd = createDate(date.getFullYear(), endDate.getMonth(), endDate.getDate());
+      
+      if (isWithinInterval(date, { start: currentYearStart, end: currentYearEnd })) {
+        return Number(quarter);
+      }
+    } else {
+      // Quarter spans into next year
+      const currentYearStart = createDate(date.getFullYear(), startDate.getMonth(), startDate.getDate());
+      const nextYearEnd = createDate(date.getFullYear() + 1, endDate.getMonth(), endDate.getDate());
+      
+      if (isWithinInterval(date, { start: currentYearStart, end: nextYearEnd })) {
+        return Number(quarter);
+      }
     }
   }
-  
-  // If no quarter found (shouldn't happen), return based on month
+
+  // If no quarter found, fall back to month-based calculation
   return Math.ceil((date.getMonth() + 1) / 3);
 };
 

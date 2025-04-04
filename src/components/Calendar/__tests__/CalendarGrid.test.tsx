@@ -4,6 +4,7 @@ import CalendarGrid from '../CalendarGrid';
 import { useCalendarConfig } from '@/stores/calendarConfig';
 import type { CalendarWeek } from '@/utils/calendarUtils';
 import { getQuarterColor } from '@/utils/calendarUtils';
+import type { QuarterConfig } from '@/stores/calendarConfig';
 
 // Mock the calendar config store
 vi.mock('@/stores/calendarConfig', () => ({
@@ -12,9 +13,10 @@ vi.mock('@/stores/calendarConfig', () => ({
 
 // Mock the CalendarDay component
 vi.mock('../CalendarDay', () => ({
-  default: ({ day, isSelected, onSelect }: any) => (
+  default: ({ day, quarterColor, isSelected, onSelect }: any) => (
     <div 
       data-testid="calendar-day"
+      className={`calendar-day ${quarterColor}`}
       data-selected={isSelected}
       data-today={day.isToday}
       onClick={onSelect}
@@ -455,5 +457,73 @@ describe('CalendarGrid', () => {
     expect(weekNumber.className).toContain('bg-gradient-to-r');
     expect(weekNumber.className).toContain('from-quarter-q1/40');
     expect(weekNumber.className).toContain('to-quarter-q4/40');
+  });
+
+  it('assigns correct quarter colors on quarter boundaries', () => {
+    const mockQuarterConfig: Record<number, QuarterConfig> = {
+      1: { startDate: '2025-01-15', endDate: '2025-04-14', color: 'bg-quarter-q1' },
+      2: { startDate: '2025-04-15', endDate: '2025-07-14', color: 'bg-quarter-q2' },
+      3: { startDate: '2025-07-15', endDate: '2025-10-14', color: 'bg-quarter-q3' },
+      4: { startDate: '2025-10-15', endDate: '2026-01-14', color: 'bg-quarter-q4' }
+    };
+
+    // Mock the useCalendarConfig hook
+    vi.mocked(useCalendarConfig).mockReturnValue({
+      config: {
+        weekStartsOn: 1,
+        quarters: mockQuarterConfig,
+        quarterStartDay: 15
+      },
+      setWeekStart: vi.fn(),
+      setQuarterStartDay: vi.fn(),
+      resetConfig: vi.fn()
+    });
+
+    // Create test data for a week containing July 14-15
+    const testWeek: CalendarWeek = {
+      weekNumber: 29,
+      days: [
+        {
+          date: new Date(2025, 6, 14), // July 14 (Q2)
+          dayOfMonth: 14,
+          isCurrentMonth: true,
+          isToday: false,
+          weekNumber: 29,
+          quarter: 2,
+          dayOfYear: 195
+        },
+        {
+          date: new Date(2025, 6, 15), // July 15 (Q3)
+          dayOfMonth: 15,
+          isCurrentMonth: true,
+          isToday: false,
+          weekNumber: 29,
+          quarter: 3,
+          dayOfYear: 196
+        }
+        // ... rest of the week
+      ]
+    };
+
+    render(
+      <CalendarGrid
+        weeks={[testWeek]}
+        selectedDate={null}
+        onSelectDay={() => {}}
+      />
+    );
+
+    // Find the calendar day elements
+    const days = screen.getAllByTestId('calendar-day');
+    const july14 = days[0];
+    const july15 = days[1];
+
+    // Check that July 14 has Q2 color and July 15 has Q3 color
+    expect(july14.className).toContain('bg-quarter-q2');
+    expect(july15.className).toContain('bg-quarter-q3');
+
+    // Check that the week number has a gradient color since it spans two quarters
+    const weekNumber = screen.getByText('29', { selector: '.week-number' });
+    expect(weekNumber.className).toContain('bg-gradient-to-r from-quarter-q2/40 to-quarter-q3/40');
   });
 }); 
