@@ -93,7 +93,7 @@ The application will be available at `http://localhost:5173`
 - `npm run build:dev` - Build for development
 - `npm run lint` - Run ESLint
 - `npm run preview` - Preview production build
-- `npm test` - Run tests in watch mode
+ - `npm test` - Run tests once (no watch mode)
 - `npm run test:coverage` - Run tests with coverage report
 - `npm run test:ui` - Run tests with UI interface
 
